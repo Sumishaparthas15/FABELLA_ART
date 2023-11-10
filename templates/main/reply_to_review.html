@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Reply to Review</h3>
+<form method="post">
+  {% csrf_token %}
+  <label for="message_text">Message Text:</label>
+  <textarea name="message_text" id="message_text"></textarea>
+  <button type="submit">Submit Reply</button>
+</form>
+{% endblock content %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}
+<!-- <section class="home-slider owl-carousel">
+
+    <div class="slider-item" style="background-image: url({% static 'images/bg4.jpg' %});" data-stellar-background-ratio="0.5">
+        <div class="overlay"></div>
+      <div class="container">
+        <div class="row slider-text justify-content-center align-items-center">
+
+          <div class="col-md-7 col-sm-12 text-center ftco-animate">
+              <h1 class="mb-3 mt-5 bread">Login</h1>
+              <p class="breadcrumbs"><span class="mr-2"><a href="{% url 'home' %}">Home</a></span> <span>Login</span></p>
+          </div>
+
+        </div>
+      </div>
+    </div> -->
+<!-- </section> -->
+
+
+
+<div class="container mt-5 pt-4" >
+    
+    <div class=" col-6 mx-auto">
+  <br><br>
+  <h3 class="text-center" style="color: black;">Login</h3>
+
+  <form action="{% url 'userlogin' %}" method="post">
+    {% csrf_token %}
+
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+    {% endfor %}
+    <div class="row">
+      <div class="form-group col-12">
+
+
+
+
+        <input type="email" placeholder="email" class="form-control" name="email" id="">
+        <input type="password" placeholder="Password" class="form-control" name="password" id="">
+
+
+
+
+      </div>
+    </div>
+
+    <p>Don't have an account ? <a href="{% url 'signup' %}">Sign up</a></p>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+
+</div>
+
+
+
+{% endblock %}

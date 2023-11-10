@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+
+  <section class="ftco-menu mb-5 pb-5">
+      <div class="container">
+          <div class="row d-md-flex">
+              <div class="col-lg-12 ftco-animate p-md-5">
+                  <div class="row">
+                    
+                    <a class="nav-link dropdown-toggle" href="room.html" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Filter</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown04" style="width: 11cm;">
+                        
+                            <br><br>
+                          
+                             
+                            <!-- Price Range Filter -->
+                            <form method="get" action="{% url 'shop' %}">
+                                <label for="min_price">Min Price:</label>
+                                <input type="number" id="min_price" name="min_price" value="{{ min_price }}">
+                                <label for="max_price">Max Price:</label>
+                                <input type="number" id="max_price" name="max_price" value="{{ max_price }}">
+                                <button type="submit">Filter by Price</button>
+                            </form>
+                            
+                            <!-- Product List -->
+                            <ul>
+                                {% for product in product %}
+                                    <li>
+                                        {{ product.product_name }} - ${{ product.price }}
+                                        <ul>
+                                            <li>Categories: {{ product.categories.all|join:", " }}</li>
+                                        </ul>
+                                    </li>
+                                {% empty %}
+                                   
+                                {% endfor %}
+                            </ul>
+                        
+                        </div>
+        
+                    </div>
+                    
+                      </li>
+                <div class="col-md-12 nav-link-wrap mb-5">
+                  <div class="nav ftco-animate nav-pills justify-content-center" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                   
+                    <a class="nav-link active" id="v-pills-0-tab" data-toggle="pill" href="#v-pills-0" role="tab" aria-controls="v-pills-0" aria-selected="true">Products</a>
+
+                    
+
+                    <!-- <a class="nav-link" id="v-pills-3-tab" data-toggle="pill" href="#v-pills-3" role="tab" aria-controls="v-pills-3" aria-selected="false">Desserts</a> -->
+                  </div>
+                </div>
+        <div class="col-md-12 d-flex align-items-center">
+                  
+            <!-- <div class="tab-content ftco-animate" id="v-pills-tabContent">
+
+                
+
+                    <div class="container">
+                        <div class="row">
+                            {% for product in products %}
+                            <div class="col-md-3">
+                                <div class="menu-entry">
+                                    <a href="{% url 'product_details' product.id %}">
+                                        <img src="/media/{{ product.image}}" style="height: 200px; width: 200px;" alt="{{ product.product_name }}">
+                                    </a>
+                                    <div class="text text-center pt-4">
+                                        <h3><a href="{% url 'product_details' product.id %}">{{ product.product_name }}</a></h3>
+                                        <p>{{ product.description }}</p>
+                                        <p class="price"><span>${{ product.price }}</span></p>
+                                        <p><a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-outline-primary">Add to Cart</a></p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div> -->
+         
+                    
+                    
+<!-- ------------------------------------------------------------------------------------------------------------------------------------- -->
+
+                    <div class="tab-pane fade show active" id="v-pills-0" role="tabpanel" aria-labelledby="v-pills-0-tab">
+                    <div class="container">
+                        <div class="row">
+                            {% for product in products %}
+                            <div class="col-md-3">
+                                <div class="menu-entry">
+                                    <a href="{% url 'product_details' product.id %}">
+                                        <img src="/media/{{ product.image}}" style="height: 200px; width: 200px;" alt="{{ product.product_name }}">
+                                    </a>
+                                    <div class="text text-center pt-4">
+                                        <h3><a href="{% url 'product_details' product.id %}">{{ product.product_name }}</a></h3>
+                                        <p>{{ product.description }}</p>
+                                        <p class="price"><span>${{ product.price }}</span></p>
+                                        <p><a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-outline-primary">Add to Cart</a></p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>      
+                <!-- <div class="tab-pane fade" id="v-pills-2" role="tabpanel" aria-labelledby="v-pills-2-tab">
+                    <div class="container">
+                        <div class="row">
+                            {% for product in products %}
+                            <div class="col-md-3">
+                                <div class="menu-entry">
+                                    <a href="{% url 'product_details' product.id %}">
+                                        <img src="/media/{{ product.image}}" style="height: 200px; width: 200px;" alt="{{ product.product_name }}">
+                                    </a>
+                                    <div class="text text-center pt-4">
+                                        <h3><a href="{% url 'product_details' product.id %}">{{ product.product_name }}</a></h3>
+                                        <p>{{ product.description }}</p>
+                                        <p class="price"><span>${{ product.price }}</span></p>
+                                        <p><a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-outline-primary">Add to Cart</a></p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    </div>
+                  </div> -->
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+  </section>
+  {% endblock %} 

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+{% for review in reviews %}
+  <h3>Review by {{ review.user_name }}</h3>
+  <p>Rating: {{ review.star_rating }}</p>
+  <p>{{ review.review_text }}</p>
+  <!-- Display reply button for admins -->
+  {% if request.user.is_staff %}
+    <a href="{% url 'reply_to_review' review.id %}">Reply</a>
+  {% endif %}
+  <!-- Display replies -->
+  {% for reply in review.replymessage_set.all %}
+    <h4>Reply by Admin</h4>
+    <p>{{ reply.message_text }}</p>
+  <!-- {% endfor %} -->
+{% endfor}
+
+<!-- Display review submission form -->
+<form method="post">
+  {% csrf_token %}
+  <label for="review_text">Review Text:</label>
+  <textarea name="review_text" id="review_text"></textarea>
+  <label for="star_rating">Star Rating:</label>
+  <input type="number" name="star_rating" id="star_rating" min="1" max="5">
+  <button type="submit">Submit Review</button>
+</form>
+{% endblock content %}

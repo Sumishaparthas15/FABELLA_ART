@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}<br><br><br><br>
+ <!-- cart-area-start -->
+        <section class="cart-area pb-120 pt-120">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <form action="#">
+                            <div class="table-content table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th class="product-thumbnail">Images</th>
+                                            <th class="cart-product-name">Product</th>
+                                            <th class="product-price">Unit Price</th>
+                                        
+                                    
+                                            <th class="product-remove">Remove</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for wishes in wish %}
+                                        <tr>
+                                            <td class="image-prod">
+                                                <div class="img" style="background-image: url('{{ wishes.product.image.url }}'); background-size: cover; width: 100px; height: 100px;"></div>
+                                              </td>
+                                            <td class="product-name"><a href="shop-details.html">{{wishes.product.product_name}}</a></td>
+                                            <td class="product-price"><span class="amount">₹ {{wishes.product.price}}</span></td>
+                                            <td class="product-remove"><a href="{% url 'remove_from_wishlist' wishes.product.id %}"><i class="fa fa-times"></i></a></td>
+                                        </tr>
+                                        {% endfor %}
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    
+
+{% endblock %}

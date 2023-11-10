@@ -1,0 +1,41 @@
+<!-- razorpay_checkout.html -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        key: '{{ razorpay_key }}',
+        amount: '{{ total * 100 }}',  // Amount in paisa
+        currency: 'INR',  // Change based on your currency
+        name: 'Your Company Name',
+        description: 'Payment for Order #{{ order.id }}',
+        image: 'your_logo_url',
+        order_id: '{{ razorpay_order_id }}',
+        handler: function (response) {
+            // Handle the success callback
+            // You can redirect the user to a success page or handle it based on your needs
+            window.location.href = '/success/';
+        },
+        prefill: {
+            name: '{{ user.get_full_name }}',
+            email: '{{ user.email }}',
+            contact: '{{ user.profile.phone }}'
+        },
+        notes: {
+            'Shipping address': '{{ order.address.get_full_address }}'
+        },
+        theme: {
+            color: '#F37254'
+        }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.on('payment.failed', function (response) {
+        // Handle the failure callback
+        alert('Payment failed: ' + response.error.description);
+    });
+
+    document.getElementById('razorpay-button').onclick = function () {
+        rzp.open();
+    };
+</script>
+
+<button id="razorpay-button" class="btn btn-success">Pay with Razorpay</button>

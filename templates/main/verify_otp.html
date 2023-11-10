@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+{% load static %}
+<br><br><br>
+
+<div class="container mt-5 pt-4">
+    
+    <div class="col-6 mx-auto">
+        <h3 class="text-center" style="color: black;">Enter OTP sent to your Email for Sign up</h3>
+     
+        {% if message %}
+        <div class="alert alert-{{class}}">
+            {{message}}
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'verify_signup' %}">
+            {% csrf_token %}
+            <input type="text" name="otp">
+            <!-- Other form fields -->
+            <input type="submit" value="Sign Up">
+        </form>
+    </div>
+
+</div>
+
+<br><br><br>
+{% endblock %}

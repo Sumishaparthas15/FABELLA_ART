@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+
+<body>
+    <div style="border: 5px solid white; padding: 20px; margin: 100px;">
+        <h3 style="color: white;">Order Details</h3>
+
+        <div class="order-summary">
+            <h4>Order Id : {{ order.id }}</h4>
+            <p>Order Date: {{ order.date }}</p>
+            <p>Customer Name: {{ order.user.username }}</p>
+            {% if order.shipping %}
+            <p>Shipping Address: {{ order.shipping.email }}, {{ order.shipping.address1 }}, {{ order.shipping.city }}, {{ order.shipping.state }}, {{ order.shipping.post_code }}</p>
+            {% elif order.address %}
+            <p>Shipping Address: {{ order.address.email }}, {{ order.address.address1 }}, {{ order.address.city }}, {{ order.address.state }}, {{ order.address.post_code }}</p>
+            {% endif %}
+            <hr style="border: 3px solid white;">
+            <h3 style="color: white;">Order Items:</h3>
+            <ul>
+                {% for order_item in order.orderitem_set.all %}
+                <li>
+                    <img src="{{ order_item.product.image.url }}" alt="Product Image" class="product-image"
+                        style="max-width: 100px; max-height: 100px;">
+                    <p><strong>Product Name:</strong> {{ order_item.product.product_name }}</p>
+                    <p><strong>Price: </strong>{{ order_item.product.price }}</p>
+                    <p><strong>Quantity: </strong>{{ order_item.quantity }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+            <div>
+                {% if order.status == 'cancelled' %}
+                <label style="color:red">Order cancelled</label>
+                {% elif order.status == 'completed' %}
+                <form method="post" action="{% url 'return_product' order.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-lg" {% if order_item.returned %}disabled{% endif %}>
+                        Return
+                    </button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'cancel_order' order.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg">Cancel</button>
+                </form>
+                {% endif %}
+            </div>
+            <br>
+            <hr style="border: 3px solid white;">
+            <p><strong>Total Price: </strong>{{ order.amount }}</p>
+            <p><strong>Payment Method: </strong>{{ order.payment_type }}</p>
+            <p><strong>Order Status: </strong>{{ order.status }}</p>
+           
+        </div>
+    </div>
+</body>
+
+
+{% endblock %}
