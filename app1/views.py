@@ -1136,6 +1136,7 @@ def userorderdetails(request,order_id):
 
     
     return render(request,'main/userorderdetails.html',context)
+
 def cancel_order(request, order_id):
     if request.method == 'POST':
         try:
