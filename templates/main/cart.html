@@ -97,13 +97,13 @@
        
         <div class="col-lg-4">
            
-            <form method="post" class="mb-5" action="">
+            <form method="post" class="mb-5" action="{% url 'apply_coupon' %}">
                 {% csrf_token %}
                 <div class="input-group">
-                    <input type="text" class="form-control p-4" placeholder="Coupon Code" list="couponList" name="coupon_code">
+                    <input type="text" class="form-control p-4" placeholder="Coupon Code" list="couponList" name="code">
                     <datalist id="couponList">
                         {% for coupon in coupons %}
-                        <option value="{{ coupon.coupon_code }}">
+                        <option value="{{ coupon.code }}">
                         {% endfor %}
                     </datalist>
                     <div class="input-group-append">

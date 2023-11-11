@@ -10,11 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
             swal("Alert", "Address field is needed", "error");
             return false;
         } else {
-            fetch('/proceedtopay')
+            fetch('/proceed-to-pay')
                 .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
                     return response.json();
                 })
                 .then(function(data) {
@@ -22,20 +19,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         key: 'rzp_test_d5VCv4MOwkIpcU',
                         amount: data.total * 100,
                         currency: 'INR',
-                        name: 'Fabella Art',
+                        name: 'FABELLA_ART',
                         description: 'Thank you for Placing an order ',
                         image: 'https://static-00.iconduck.com/assets.00/bill-payment-icon-2048x2048-vpew78n5.png',
                         handler: function(responseb) {
-                            // Assuming you have the order_id and total_amount in the response
-                            var order_id = responseb.order_id;
-                            var total_amount = data.total;
-
-                            createRazorpayOrder(order_id, total_amount);
+                            window.location.href = '/razorpay/' + selects;
                         },
                         prefill: {
-                            name: 'SUMISHA',
-                            email: 'sumishasudha392@gmail.com',
-                            contact: '9037235334'
+                            name: '',
+                            email: '',
+                            contact: ''
                         },
                         notes: {
                             address: 'Razorpay Corporate Office'

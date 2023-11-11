@@ -61,7 +61,7 @@
                         <select id="addressDropdown" name="addressId">
                             <option value="">Select an address</option>
                             {% for address in addresses %}
-                            <option value="{{ address.id }}">{{ address.first_name }} {{ address.last_name }}, {{ address.city }}</option>
+                            <option value="{{ address.id }}">{{ address.firstname }} {{ address.last_name }}, {{ address.city }}</option>
                             {% endfor %}
                         </select>
                         <button type="button" class="btn btn-primary btn-small mt-2" data-toggle="modal" data-target="#exampleModalCenters">
@@ -180,26 +180,42 @@
             {% csrf_token %}
             <div class="row">
                 <div class="modal-body">
-                    <label>Full Name</label>
-                    <input name="full_name" type="text" class="form-control" required>
-            
-                    <label>House No</label>
-                    <input name="house_no" type="text" class="form-control" required>
-            
-                    <label>Post Code</label>
-                    <input name="post_code" type="text" class="form-control" required>
-                    
-                    <label>State</label>
-                    <input name="state" type="text" class="form-control" required>
-                    
-                    <label>Street</label>
-                    <input name="street" type="text" class="form-control" required>
-                    
-                    <label>City</label>
-                    <input name="city" type="text" class="form-control" required>
-  
-                    <label>Phone Number</label>
-                    <input name="phone_no" type="text" class="form-control" required>
+                    <div class="label-input-vertical">
+                        <label for="firstName">First Name</label>
+                        <input type="text" class="form-control" name="fname" id="firstName" placeholder="Enter First Name" required>
+                    </div>
+                    <div class="label-input-vertical">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" class="form-control" name="lname" id="lastName" placeholder="Enter Last Name" required>
+                    </div>
+                    <div class="label-input-vertical">
+                        <label for="email">Email Address</label>
+                        <input type="email" class="form-control" name="email" id="email" placeholder="Enter Email Address" required>
+                    </div>
+                    <div class="label-input-vertical">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" class="form-control" name="phone" id="phoneNumber" placeholder="Enter Phone Number" required>
+                    </div>
+                    <div class="label-input-vertical">
+                        <label for="address">Address</label>
+                        <input type="text" class="form-control" name="address" id="address" placeholder="Enter Address" required>
+                    </div>
+                    <div class="label-input-vertical">
+                        <label for="country">Country</label>
+                        <input type="text" class="form-control" name="country" id="country" placeholder="Enter Country" required>
+                    </div>
+                    <div class="label-input-vertical">
+                        <label for="state">State</label>
+                        <input type="text" class="form-control" name="state" id="state" placeholder="Enter State" required>
+                    </div>
+                    <div class="label-input-vertical">
+                        <label for="city">City</label>
+                        <input type="text" class="form-control" name="city" id="city" placeholder="Enter City" required>
+                    </div>
+                    <div class="label-input-vertical">
+                        <label for="pinCode">Pin Code</label>
+                        <input type="text" class="form-control" name="pincode" id="pinCode" placeholder="Enter Pin Code" required>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">Submit</button>

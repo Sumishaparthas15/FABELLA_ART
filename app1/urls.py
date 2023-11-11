@@ -98,9 +98,10 @@ urlpatterns = [
     path('shippingaddress/', views.shippingaddress, name='shippingaddress'),
     path('placeorder/',views.placeorder,name='placeorder'),
     path('success/',views.success,name='success'),
-    path('razorpay/<int:address_id>/<str:order_id>/<int:total_amount>/', views.razorpay, name='razor_pay'),
+    # path('razorpay/<int:address_id>/<str:order_id>/<int:total_amount>/', views.razorpay, name='razor_pay'),
 
-    path('proceedtopay/', views.proceedtopay, name='proceedtopay'),
+    path('proceed-to-pay',views.proceedtopay,name='proceedtopay'),
+    path('razorpay/<int:address_id>/',views.razorpay,name='razorpay'),
     
 
     #order
