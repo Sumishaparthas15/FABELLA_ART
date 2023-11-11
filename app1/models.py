@@ -23,7 +23,7 @@ class Profile(AbstractUser):
     profile_photo      = models.ImageField(upload_to='products', null=True, blank=True)
     referral_code      = models.CharField(max_length=100, null=True, unique=True)
     referral_amount    = models.IntegerField(default=0)
-    
+    wallet_bal= models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
     objects = UserManager()
     USERNAME_FIELD = 'email'
@@ -196,7 +196,21 @@ class Offer(models.Model):
     
 
     def __str__(self):
-        return self.title    
+        return self.title 
+
+class Wallet(models.Model):
+    user  =models.ForeignKey(Profile, on_delete=models.CASCADE,null=True,blank=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    is_credit = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status=models.CharField(max_length=20,blank=True)
+
+    def _str_(self):
+        return f"{self.amount} {self.is_credit}"
+
+    def _iter_(self):
+        yield self.pk        
         
 
 

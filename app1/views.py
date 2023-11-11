@@ -33,6 +33,7 @@ from .forms import *
 from django.http import JsonResponse
 import razorpay
 from django.db.models import F, Sum
+from django.http import HttpResponseNotFound
 
 
 import json
@@ -1201,29 +1202,89 @@ def userorderdetails(request,order_id):
 
     
     return render(request,'main/userorderdetails.html',context)
-
 def cancel_order(request, order_id):
-    if request.method == 'POST':
-        try:
-            order = get_object_or_404(Order, id=order_id)  # Use get_object_or_404 to retrieve the order
-            order.status = 'cancelled'
-            order.save()
-        except Order.DoesNotExist:
-            pass
-        else:
-            return redirect('userorder')  # Redirect to 'userorder' when the order is successfully canceled
-    return redirect('userorderdetails', order_id=order_id)  # Redirect to 'userorderdetails' when the request is not POST or if the order is not found
+    user = request.user
+    usercustm = Profile.objects.get(email=user)
     
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        # Handle the case where the order with the given ID does not exist
+        return HttpResponseNotFound("Order not found")
+
+    if order.status == 'completed' and order.payment_type == 'cod':
+        wallet = Wallet.objects.create(
+            user=user,
+            order=order,
+            amount=order.amount,
+            status='Credited',
+        )
+        wallet.save()
+        order.status = 'cancelled'
+        order.save()
+        Order_item_amount = Decimal(order.amount)
+        usercustm.wallet_bal += Order_item_amount
+        usercustm.save()
+    elif order.payment_type == 'razorpay':
+        wallet = Wallet.objects.create(
+            user=user,
+            order=order,
+            amount=order.amount,
+            status='Credited',
+        )
+        wallet.save()
+        order.status = 'cancelled'
+        order.save()
+        Order_item_amount = Decimal(order.amount)
+        usercustm.wallet_bal += Order_item_amount
+        usercustm.save()
+
+    restock_products(order)
+    order.status = 'cancelled'
+    order.save()
+    return redirect('userorderdetails', order.id)
+
+def restock_products(order):
+    order_items = OrderItem.objects.filter(order=order)
+    for order_item in order_items:
+        product = order_item.product
+        product.stock += order_item.quantity
+        product.save() 
 def return_product(request, order_id):
-    order_item = get_object_or_404(OrderItem, id=order_id)
+    user = request.user
+    usercustm = Profile.objects.get(email=user)
+    order = Order.objects.get(id=order_id)
+    if (order.status == 'delivered' or order.status == 'completed') and (order.payment_type == 'cod' or order.payment_type == 'razorpay'):
+        wallet = Wallet.objects.create(
+            user=user,
+            order=order,
+            amount=order.amount,
+            status='Credited'
+        )
+        wallet.save()
+        order.status = 'returned'
+        order.save()
+        refund = Decimal(order.amount)
+        usercustm.wallet_bal += refund
+        usercustm.save()
+        restock_products(order)
     
-    if not order_item.returned:
-        order_item.product.stock += order_item.quantity
-        order_item.product.save()
-        order_item.returned = True
-        order_item.save()
+    return redirect('userorderdetails', order_id=order.id)
+
+#Wallet
+
+def wallet(request):
+    user = request.user
+    customer = Profile.objects.get(email=user)
+    print(customer)
+    wallet_transactions = Wallet.objects.filter(user=customer).order_by('-created_at')
     
-    return redirect(request,'userorderdetails', order_id=order_item.order.id)
+    
+    context = {
+        'wallet_transactions': wallet_transactions,
+        'customer': customer,
+    }
+    return render(request, 'main/wallet.html', context)
 
 
 #COUPON

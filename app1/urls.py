@@ -110,7 +110,7 @@ urlpatterns = [
     path('cancel_order/<int:order_id>/', views.cancel_order, name='cancel_order'),
     path('return_product/<int:order_id>/', views.return_product, name='return_product'),
 
-  #coupon
+    #coupon
     path('coupon/',views.coupon,name = 'coupon'),
     path('addcoupon/',views.addcoupon,name='addcoupon'),
     path('apply_coupon/', views.apply_coupon, name='apply_coupon'),
@@ -118,6 +118,9 @@ urlpatterns = [
     path('coupon/<int:id>/update_coupon/', views.update_coupon, name='update_coupon'),
     path('coupon/<int:coupon_id>/delete/', views.delete_coupon, name='delete_coupon'),
     
+
+    #wallet
+    path('wallet/', views.wallet, name='wallet'),
   
   
 
