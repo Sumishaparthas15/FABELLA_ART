@@ -94,11 +94,14 @@ urlpatterns = [
     path('update-cart/<int:product_id>/', views.update_cart, name='update_cart'),
 
     #checkout
-    path('checkout/', views.checkout, name='checkout'),
+    path('checkout',views.checkout,name='checkout'),
     path('shippingaddress/', views.shippingaddress, name='shippingaddress'),
-    path('placeorder/', views.placeorder, name='place_order'),
-    path('success/', views.success, name='success'),
-    path('razor_pay/', views.razor_pay, name='razor_pay'),
+    path('placeorder/',views.placeorder,name='placeorder'),
+    path('success/',views.success,name='success'),
+    path('razorpay/<int:address_id>/<str:order_id>/<int:total_amount>/', views.razorpay, name='razor_pay'),
+
+    path('proceedtopay/', views.proceedtopay, name='proceedtopay'),
+    
 
     #order
     path('userorder/', views.userorder, name='userorder'),
@@ -106,12 +109,16 @@ urlpatterns = [
     path('cancel_order/<int:order_id>/', views.cancel_order, name='cancel_order'),
     path('return_product/<int:order_id>/', views.return_product, name='return_product'),
 
- 
+  #coupon
+    path('coupon/',views.coupon,name = 'coupon'),
+    path('addcoupon/',views.addcoupon,name='addcoupon'),
+    path('apply_coupon/', views.apply_coupon, name='apply_coupon'),
+    path('coupon/<int:coupon_id>/edit/', views.editcoupon, name='edit_coupon'), 
+    path('coupon/<int:id>/update_coupon/', views.update_coupon, name='update_coupon'),
+    path('coupon/<int:coupon_id>/delete/', views.delete_coupon, name='delete_coupon'),
     
   
-
-   
-
+  
 
     
      

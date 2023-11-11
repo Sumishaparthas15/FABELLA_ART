@@ -1,13 +1,39 @@
-
 {% extends 'base.html' %}
-{% load static %}
-{% load product_tags %}
-{% block content %}  <!-- Add this line to start the content block -->
-
+{% block content %}
 {% load static %}
 
 
-<br><br><br>
+    
+    <style>
+   
+        #addressDropdown {
+            width: 200px; 
+            height: 40px;
+            font-size: 14px;
+        }
+    
+       
+        @media (max-width: 767px) {
+            #addressDropdown {
+                font-size: 12px;
+            }
+        }
+        .btn-small {
+            padding: 5px 10px; 
+            font-size: 12px; 
+        }
+    </style>
+</head>
+
+<body>
+    
+
+        
+
+
+     
+    
+
     <!-- Checkout Start -->
     <div class="container-fluid pt-5">
         
@@ -27,25 +53,31 @@
                 <div class="mb-4">
                     <!-- <h5>Use Saved Address</h5> -->
                     <h4 class="font-weight-semi-bold mb-4">Billing Address</h4>
-                    <form id="order-form" action="{% url 'place_order' %}" method="post">
+                    <form id="order-form" action="{% url 'placeorder' %}" method="post">
                         {% csrf_token %}
-                        <label for="addressDropdown">Select Address:</label>
+
+                        <div class=" border-secondary mb-10  pt-3">
+                            <label for="addressDropdown">Select Address:</label>
                         <select id="addressDropdown" name="addressId">
                             <option value="">Select an address</option>
                             {% for address in addresses %}
-                                <option value="{{ address.id }}">{{ address.firstname }} {{ address.lastname }}, {{ address.city }}</option>
-                                {% endfor %}
-
-                            </select>
+                            <option value="{{ address.id }}">{{ address.first_name }} {{ address.last_name }}, {{ address.city }}</option>
+                            {% endfor %}
+                        </select>
                         <button type="button" class="btn btn-primary btn-small mt-2" data-toggle="modal" data-target="#exampleModalCenters">
                             Add New Address
                         </button>
+                        </div>
                        
-                        <div class="card border-secondary mb-5 pt-3">
+                          
+                        
+                        
+                       
+                        <div class="card border-secondary  mb-5 pt-3">
                             <div class="card-header bg-secondary border-0">
                                 <h4 class="font-weight-semi-bold m-0 ">Payment</h4>
                             </div>
-                            <div class="card-body">
+                            <div class="car d-body ">
                               
                                 <div class="form-group">
                                     <div class="custom-control custom-radio">
@@ -53,26 +85,42 @@
                                         <label class="custom-control-label" for="directcheck">COD (cash on delivery)</label>
                                     </div>
                                 </div>
-                            
+                                
                                 <div class="form-group">
                                     <div class="custom-control custom-radio">
                                         <input type="radio" class="custom-control-input" name="payment" id="banktransfer" value="razorpay" onchange="handlePaymentSelection()">
                                         <label class="custom-control-label" for="banktransfer">RAZORPAY</label>
                                     </div>
                                 </div>
+
+                            </div>
+                           
+                            <div class="card-footer border-secondary bg-transparent">
+                                <button id="place-order-button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3" type="submit">Place Order</button>
+                                <button id="rzp-button1" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with RAZORPAY</button>
+
+                            </div>
                             
-                                <div class="card-footer border-secondary bg-transparent">
-                                    <button id="place-order-button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3" type="submit">Place Order</button>
-                                    <button id="rzp-button1" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3 paywithrazorpay" type="button" onclick="createRazorpayOrder(order_id, total_amount)">Pay with RAZORPAY</button>
-                                </div>
-                            </form>
-               </div>
+                        </div>
+                        
+                        
+                       
+
+                    </form>
+
+                </div>
              
             </div>
-
+<br><br>
             <div class="col-lg-4">
-                <div class="card border-secondary mb-5">
-                    <div class="card-header bg-secondary border-0">
+                <br><br><br>
+                <div class="card border-secondary mb-5 mt-30">
+                    <div class="card-header bg-secondary bdef success(request):
+                    orders = Order.objects.order_by('-id')[:1]
+                    context = {
+                        'orders'  : orders,
+                    }
+                    return render(request,'placeorder.html',context)order-0">
                         <h4 class="font-weight-semi-bold m-0">Order Total</h4>
                     </div>
                     <div class="card-body">
@@ -80,26 +128,15 @@
                         {% for cart_item in cart_items %}
                         <div class="d-flex justify-content-between">
                             <p>{{ cart_item.product.product_name }}</p>
-                            {% if cart_item.product.category.category_offer %}
-
-                                {% with offer_price=cart_item.product.price|add:'-'|add:cart_item.product.category.category_offer %}
-                                    <p>₹{{ cart_item.product.price }} - (₹{{ cart_item.product.category.category_offer }})</p>
-                                {% endwith %}
-
-                            {% elif cart_item.product.product_offer %}
-                                {% with offer_price=cart_item.product.price|add:'-'|add:cart_item.product.category.category_offer %}
-                                <p>₹{{ cart_item.product.price }} - ₹17.5</p>
-                            {% endwith %}
-                                
-
-                            {% else %}
+                            
                                 <p>₹{{ cart_item.product.price }}</p>
-                            {% endif %}
+                           
                             <p>x {{ cart_item.quantity }}</p>
                         </div>
                         {% endfor %}
                         <hr class="mt-0">
                         <div class="d-flex justify-content-between mb-3 pt-1">
+                            <h6>₹{{ cart_item.product.price }}</h6>
                             <h6 class="font-weight-medium">Subtotal</h6>
                             <h6 class="font-weight-medium">₹{{ subtotal }}</h6>
                         </div>
@@ -111,13 +148,13 @@
                         </div>
                         <div class="d-flex justify-content-between">
                             <h6 class="font-weight-medium">Shipping</h6>
-                            <h6 class="font-weight-medium">₹100</h6>
+                            <h6 class="font-weight-medium">₹10</h6>
                         </div>
                     </div>
                     <div class="card-footer border-secondary bg-transparent">
                         <div class="d-flex justify-content-between mt-2">
-                            <h5 class="font-weight-bold">Total</h5>
-                            <h5 class="font-weight-bold">₹{{ total }}</h5>
+                            <h5 class="font-weight-bold text-dark">Total</h5>
+                            <h5 class="font-weight-bold text-dark">₹{{ total }}</h5>
                         </div>
                     </div>
                 </div>
@@ -125,7 +162,8 @@
             </div>
         </div>
     </div>
-  
+    
+
 <!-- modal for add-address -->
 <div class="modal fade" id="exampleModalCenters" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -141,48 +179,39 @@
         <form id="order-form" action="{% url 'shippingaddress' %}" method="post">
             {% csrf_token %}
             <div class="row">
-                <div class="label-input-vertical">
-                    <label for="firstName">First Name</label>
-                    <input type="text" class="form-control" name="fname" id="firstName" placeholder="Enter First Name" required>
+                <div class="modal-body">
+                    <label>Full Name</label>
+                    <input name="full_name" type="text" class="form-control" required>
+            
+                    <label>House No</label>
+                    <input name="house_no" type="text" class="form-control" required>
+            
+                    <label>Post Code</label>
+                    <input name="post_code" type="text" class="form-control" required>
+                    
+                    <label>State</label>
+                    <input name="state" type="text" class="form-control" required>
+                    
+                    <label>Street</label>
+                    <input name="street" type="text" class="form-control" required>
+                    
+                    <label>City</label>
+                    <input name="city" type="text" class="form-control" required>
+  
+                    <label>Phone Number</label>
+                    <input name="phone_no" type="text" class="form-control" required>
                 </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </div>
+            </form>
+        </div>
+  </div>
+    </div>
+                
+                
 
-                <div class="label-input-vertical">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" class="form-control" name="lname" id="lastName" placeholder="Enter Last Name" required>
-                </div>
-                <div class="label-input-vertical">
-                    <label for="email">Email Address</label>
-                    <input type="email" class="form-control" name="email" id="email" placeholder="Enter Email Address" required>
-                </div>
-                <div class="label-input-vertical">
-                    <label for="phoneNumber">Phone Number</label>
-                    <input type="tel" class="form-control" name="phone" id="phoneNumber" placeholder="Enter Phone Number" required>
-                </div>
-                <div class="label-input-vertical">
-                    <label for="address">Address</label>
-                    <input type="text" class="form-control" name="address" id="address" placeholder="Enter Address" required>
-                </div>
-                <div class="label-input-vertical">
-                    <label for="country">Country</label>
-                    <input type="text" class="form-control" name="country" id="country" placeholder="Enter Country" required>
-                </div>
-                <div class="label-input-vertical">
-                    <label for="state">State</label>
-                    <input type="text" class="form-control" name="state" id="state" placeholder="Enter State" required>
-                </div>
-                <div class="label-input-vertical">
-                    <label for="city">City</label>
-                    <input type="text" class="form-control" name="city" id="city" placeholder="Enter City" required>
-                </div>
-                <div class="label-input-vertical">
-                    <label for="pinCode">Pin Code</label>
-                    <input type="text" class="form-control" name="pincode" id="pinCode" placeholder="Enter Pin Code" required>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </form>
+            
        
     </div>
 
@@ -193,44 +222,6 @@
 
 
 
-    <!-- Checkout End -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-        <script>
-            var razorpay_key = "rzp_test_d5VCv4MOwkIpcU";
-        </script>
-    <script>
-        function createRazorpayOrder(order_id, total_amount) {
-            var options = {
-                key: razorpay_key,
-                amount: total_amount * 100, // Amount in paisa
-                currency: "INR",
-                name: "Your Company Name",
-                description: "Payment for Order #" + order_id,
-                order_id: order_id,
-                handler: function (response) {
-                    // Handle success callback
-                    window.location.href = "/success/"; // Redirect to success page
-                },
-                prefill: {
-                    name: "User Name",
-                    email: "user@example.com",
-                    contact: "1234567890"
-                },
-                theme: {
-                    color: "#F37254"
-                }
-            };
-    
-            var rzp = new Razorpay(options);
-            rzp.open();
-        }
-    </script>
-    
-
-
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
-
 
     <!-- JavaScript Libraries -->
     <script>
@@ -239,17 +230,18 @@
         });
     </script>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+
+<!-- <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script> -->
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'home/lib/easing/easing.min.js' %}"></script>
-    <script src="{% static 'home/lib/owlcarousel/owl.carousel.min.js' %}"></script>
+    <!-- <script src="{% static 'home/lib/owlcarousel/owl.carousel.min.js' %}"></script> -->
 
-    <!-- Contact Javascript File -->
-    <script src="{% static 'home/mail/jqBootstrapValidation.min.js' %}"></script>
-    <script src="{% static 'home/mail/contact.js' %}"></script>
- 
-    <!-- Template Javascript -->
-    <script src="{% static 'home/js/main.js' %}"></script>
+    
+    
 
     <!-- testing -->
     <script>
@@ -274,15 +266,10 @@
 
 
     <!-- razorpay -->
+   
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="{% static 'home/js/checkout.js' %}"></script>
+    <script src="{% static 'js/home/checkout.js' %}"></script>
     <!-- alert-message -->
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-
-
-</body>
-
-</html>
-   
 
 {% endblock %}

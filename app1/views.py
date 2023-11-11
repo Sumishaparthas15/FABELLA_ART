@@ -433,6 +433,122 @@ def search_customer(request):
     }
 
     return render(request, 'main/customer.html', context)
+@never_cache
+@cache_control(no_cache=True,must_revalidate=True,no_store=True)
+def coupon(request):
+    if 'admin' in request.session:
+        coupons = Coupon.objects.all().order_by('id')
+        context = {'coupons': coupons}
+        return render(request,'main/coupon.html', context)
+    else:
+        return redirect('admin')
+
+def addcoupon(request):
+    if request.method == 'POST':
+        code    = request.POST.get('Couponcode')
+        discount  = request.POST.get('dprice')
+        minimum_amount = request.POST.get('amount')
+        expiration_date = request.POST.get('date')  
+        coupon = Coupon(code=code, discount=discount, minimum_amount=minimum_amount,expiration_date=expiration_date)
+        coupon.save()
+        return redirect('coupon')
+    
+def apply_coupon(request):
+    if request.method == 'POST':
+        coupon_code = request.POST.get('coupon_code')
+        try:
+            coupon = Coupon.objects.get(coupon_code=coupon_code)
+        except Coupon.DoesNotExist:
+            messages.error(request, 'Invalid coupon code')
+            return redirect('checkout')
+        user = request.user
+        cart_items = Cart.objects.filter(user=user)
+        subtotal = 0
+        shipping_cost = 10
+        total_dict = {}
+        coupons = Coupon.objects.all()
+        for cart_item in cart_items:
+            if cart_item.quantity > cart_item.product.stock:
+                messages.warning(request, f"{cart_item.product.product_name} is out of stock.")
+                cart_item.quantity = cart_item.product.stock
+                cart_item.save()
+            if cart_item.product.category.category_offer:
+                item_price = (cart_item.product.price - (cart_item.product.price*cart_item.product.category.category_offer/100)) * cart_item.quantity
+                total_dict[cart_item.id] = item_price
+                subtotal += item_price
+            elif cart_item.product.product_offer:
+                item_price = (cart_item.product.price - (cart_item.product.price * cart_item.product.product_offer/100)) * cart_item.quantity
+                total_dict[cart_item.id] = item_price
+                subtotal += item_price
+            else:
+                item_price = cart_item.product.price * cart_item.quantity
+                total_dict[cart_item.id] = item_price
+                subtotal += item_price
+        if subtotal >= coupon.minimum_amount:
+            messages.success(request, 'Coupon applied successfully')
+            request.session['discount'] = coupon.discount_price
+            print( request.session['discount'])
+            total = subtotal - coupon.discount_price + shipping_cost
+        else:
+            messages.error(request, 'Coupon not available for this price')
+            total = subtotal + shipping_cost
+        for cart_item in cart_items:
+            cart_item.total_price = total_dict.get(cart_item.id, 0)
+            cart_item.save()
+        context = {
+            'cart_items': cart_items,
+            'subtotal': subtotal,
+            'total': total,
+            'coupons': coupons,
+            'discount_amount': coupon.discount_price,
+        }
+        return render(request, 'cart.html', context)
+    return redirect('cart')
+
+@cache_control(no_cache=True,must_revalidate=True,no_store=True)
+@never_cache  
+def editcoupon(request,coupon_id):
+    if 'admin' in request.session:
+        try:
+            coupon = Coupon.objects.get(id=coupon_id)
+        except Section.DoesNotExist:
+            return render(request, 'subcategory_not_found.html')
+        context = {'coupon': coupon}
+        return render(request, 'main/edit_coupon.html', context)
+    else:
+        return redirect ('admin')
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@never_cache
+def update_coupon(request, id):
+    # Use get_object_or_404 to retrieve the coupon or return a 404 page if it doesn't exist
+    coupon = get_object_or_404(Coupon, id=id)
+    if request.method == 'POST':
+        code = request.POST.get('Couponcode')
+        discount = request.POST.get('price')
+        minimum_amount = request.POST.get('amount')
+        expiration_date = request.POST.get('date')
+        # Check if coupon_code and discount_price are not null before updating
+        if code:
+            coupon.code = code
+        if discount:
+            coupon.discount = discount
+        coupon.minimum_amount = minimum_amount
+        coupon.expiration_date = expiration_date
+        coupon.save()  # Save the updated coupon object here
+        return redirect('coupon')
+    context = {'coupon': coupon}
+    return render(request, 'main/edit_coupon.html', context)
+
+def delete_coupon(request,coupon_id):
+    try:
+        coupon= Coupon.objects.get(id=coupon_id)
+    except Coupon.DoesNotExist:
+        return render(request, 'category_not_found.html')
+    coupon.delete()
+    coupons = Coupon.objects.all()
+    context = {'coupons': coupons}
+    return redirect('coupon')
 
 
 #-----------------------------------------------------------------------------------------------------------
@@ -935,116 +1051,87 @@ def remove_from_cart(request,product_id):
     return redirect('cart')
 
 @never_cache
-@cache_control(no_cache=True,must_revalidate=True,no_store=True)
-def checkout(request):
-    
-        user = request.user
-        cart_items = Cart.objects.filter(user=user)
-        subtotal=0
-        total_dict = {}
-        for cart_item in cart_items:
-            if cart_item.quantity > cart_item.product.stock:
-                messages.warning(request, f"{cart_item.product.product_name} is out of stock.")
-                cart_item.quantity = cart_item.product.stock
-                cart_item.save()
-                item_price = Decimal(0) 
-            
-            else:
-                item_price = cart_item.product.price * cart_item.quantity
-                total_dict[cart_item.id] = item_price
-                subtotal += item_price 
-                    
-            
-        shipping_cost = 100 
-        discount = request.session.get('discount', 0)
-        if discount:
-            total =  subtotal + shipping_cost - discount if subtotal else 0
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def checkout(request): 
+    user = request.user
+    cart_items = Cart.objects.filter(user=user)
+    subtotal = 0
+    for cart_item in cart_items:
         
-        else:
-            total =  subtotal + shipping_cost  if subtotal else 0
+            itemprice = (cart_item.product.price) * (cart_item.quantity)
+            subtotal = subtotal + itemprice
+    shipping_cost = 10 
+    discount = request.session.get('discount', 0)
+    if discount:
+        total =  subtotal + shipping_cost - discount if subtotal else 0    
+    else:
+        total =  subtotal + shipping_cost  if subtotal else 0
+    addresses = Address.objects.filter(user=user)
+    context = {
+        'cart_items': cart_items,
+        'subtotal': subtotal,
+        'discount_amount'  :  discount,
+        'total': total,
+        'addresses': addresses,          
+     }
+    return render(request, 'main/checkout.html', context)
 
-
-        addresses = Address.objects.filter(user=user)
-    
-        context = {
-            'cart_items'       :  cart_items,
-            'subtotal'         :  subtotal,
-            'total'            :  total,
-            'addresses'        :  addresses,
-            'discount_amount'  :  discount,
-            
-        
-            
-        }
-        return render(request, 'main/checkout.html', context)
 def shippingaddress(request):
     if request.method == 'POST':
-        fname = request.POST.get('fname')
-        lname = request.POST.get('lname')
-        email = request.POST.get('email')
-        phone = request.POST.get('phone')
-        address = request.POST.get('address')
-        country = request.POST.get('country')
+        full_name = request.POST.get('full_name')
+        house_no = request.POST.get('house_no')
+        post_code = request.POST.get('post_code')
         state = request.POST.get('state')
+        street = request.POST.get('street')
+        phone_no = request.POST.get('phone_no')
         city = request.POST.get('city')
-        pincode = request.POST.get('pincode')
-        if not fname or not lname or not email or not phone or not address or not country or not state or not city or not pincode: 
+        if not full_name or not house_no or not post_code or not state or not street or not phone_no or not city:
             messages.error(request, 'Please input all the details!!!')
             return redirect('checkout')  
         user = request.user  # Assuming you are using Django authentication and have a user object
         # Create and save the Address object
         address = Address.objects.create(
             user=user,
-            firstname = fname,
-            lastname = lname,
-            email = email,
-            number = phone,
-            address1 = address,
-            country = country,
-            state = state,
-            city = city,
-            zip = pincode
-           
+            full_name=full_name,
+            house_no=house_no,
+            post_code=post_code,
+            state=state,
+            street=street,
+            phone_no=phone_no,
+            city=city,
         )
         return redirect('checkout')  # Redirect to the appropriate URL after successful form submission
     else:
         # Render the form when the request method is not POST
-        return render(request, 'main/checkout.html')
-    
+        return render(request, 'checkout.html')  
+
+#placeorder
 
 @login_required
 def placeorder(request):
     user = request.user
     cart_items = Cart.objects.filter(user=user)
-    
     subtotal = 0
-    total_dict = {}
-    
     for cart_item in cart_items:
-        if cart_item.quantity > cart_item.product.stock:
-            messages.warning(request, f"{cart_item.product.product_name} is out of stock.")
-            cart_item.quantity = cart_item.product.stock
-            cart_item.save()
-        
-        item_price = cart_item.product.price * cart_item.quantity
-        total_dict[cart_item.id] = item_price
-        subtotal += item_price
+        if cart_item.product.price is None:
+            messages.error(request, 'One of the products in the cart does not have a price set.')
+            return redirect('cart')
+        itemprice = cart_item.product.price * cart_item.quantity
+        subtotal += itemprice
 
-    shipping_cost = 100 
+    shipping_cost = 10
     total = subtotal + shipping_cost if subtotal else 0
-    
     discount = request.session.get('discount', 0)
+    if discount:
+        total -= discount
 
     if request.method == 'POST':
         payment = request.POST.get('payment')
         address_id = request.POST.get('addressId')
-    
+
         if not address_id:
             messages.info(request, 'Input Address!!!')
-            return redirect('checkout')
-        
-        if discount:
-            total -= discount 
+            return redirect('check_out')
 
         address = Address.objects.get(id=address_id)
 
@@ -1054,9 +1141,12 @@ def placeorder(request):
             amount=total,
             payment_type=payment,
         )
-
         for cart_item in cart_items:
             product = cart_item.product
+            if product.stock < cart_item.quantity:
+                messages.error(request, f'Not enough stock for {product.name}.')
+                return redirect('cart')
+
             product.stock -= cart_item.quantity
             product.save()
 
@@ -1064,31 +1154,51 @@ def placeorder(request):
                 order=order,
                 product=cart_item.product,
                 quantity=cart_item.quantity,
-                image=cart_item.product.image,
-                price=cart_item.product.price  # Set the price based on the product's price
+                image=cart_item.product.image
             )
-    
-    cart_items.delete()
-    return redirect('success')
-def razor_pay(request,address_id):
+        cart_items.delete()
+        return redirect('success')
+    else:
+        messages.error(request, 'Invalid request method.')
+        return redirect('cart')
+#payment
+def proceedtopay(request):
+    print('hjbdshkbskdjg')
+    cart = Cart.objects.filter(user=request.user)
+    total = 0
+    shipping = 10
+    subtotal=0
+    for cart_item in cart:
+        
+            itemprice = (cart_item.product.price) * (cart_item.quantity)
+            subtotal = subtotal + itemprice
+    for item in cart:
+        discount = request.session.get('discount', 0)
+    total=subtotal+shipping 
+    if discount:
+        total -= discount 
+    return JsonResponse({
+        'total' : total
+
+    })
+
+def razorpay(request,address_id):
+    print("Razorrrrrrrrrrrrrrr pay")
     user = request.user
     cart_items = Cart.objects.filter(user=user)
     subtotal=0
     for cart_item in cart_items:
-        if cart_item.product.category.category_offer:
-            item_price = (cart_item.product.price - (cart_item.product.price*cart_item.product.category.category_offer/100)) * cart_item.quantity
-            subtotal += item_price
-        elif cart_item.product.product_offer:
-            itemprice =  (cart_item.product.price - (cart_item.product.price * cart_item.product.product_offer/100)) * cart_item.quantity
-            subtotal=subtotal+itemprice
-        else:
+       
             itemprice = (cart_item.product.price) * (cart_item.quantity)
             subtotal = subtotal + itemprice
     shipping_cost = 10 
     total = subtotal + shipping_cost if subtotal else 0
+    
     discount = request.session.get('discount', 0)
+    
     if discount:
         total -= discount 
+
     payment  =  'razorpay'
     user     = request.user
     cart_items = Cart.objects.filter(user=user)
@@ -1103,12 +1213,14 @@ def razor_pay(request,address_id):
         product = cart_item.product
         product.stock -= cart_item.quantity
         product.save()
+
         order_item = OrderItem.objects.create(
             order         =     order,
             product       =     cart_item.product,
             quantity      =     cart_item.quantity,
             image         =     cart_item.product.image  
         )
+    
     cart_items.delete()
     return redirect('success')
 
@@ -1116,7 +1228,6 @@ def success(request):
     orders = Order.objects.order_by('-id')[:1]
     context = {
         'orders'  : orders,
-
     }
     return render(request,'main/placeorder.html',context)
 #order

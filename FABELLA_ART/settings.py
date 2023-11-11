@@ -148,5 +148,5 @@ AUTH_USER_MODEL = 'app1.Profile'
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 
-RAZORPAY_API_KEY = "rzp_test_d5VCv4MOwkIpcU"
-RAZORPAY_API_SECRET = "OXxDDHSLPDiM9yvqbd1SAFdN"
+# RAZORPAY_API_KEY = "rzp_test_d5VCv4MOwkIpcU"
+# RAZORPAY_API_SECRET = "OXxDDHSLPDiM9yvqbd1SAFdN"
