@@ -34,6 +34,10 @@ from django.http import JsonResponse
 import razorpay
 from django.db.models import F, Sum
 from django.http import HttpResponseNotFound
+from django.shortcuts import render, redirect
+from django.views import View
+from .models import Banner
+from .forms import BannerForm
 
 
 import json
@@ -297,7 +301,8 @@ def add_product(request):
             subcategory_id = request.POST.get('subcategory_id')
             stock = request.POST.get('stock')
             price = request.POST.get('price')
-            images = request.FILES.getlist('images')  # Get all uploaded images
+            images = request.FILES.get('images')  # Get all uploaded images
+            print(images,"222222222222222222222222222222222")
             size = request.POST.get('size')  # Add size
 
             try:
@@ -313,12 +318,13 @@ def add_product(request):
                 category_id=main_category_id,
                 stock=stock,
                 price=price,
-                size=size,  # Add size
+                size=size,
+                image = images  # Add size
             )
 
-            for image in images:
-                Images.objects.create(product=product, images=image)
-
+          
+            for image in request.FILES.getlist('images'):
+                    Images.objects.create(product=product, images=image)
             return redirect('product')
 
         context = {'categories': categories}
@@ -370,9 +376,11 @@ def update_product(request, product_id):
         product.save()
 
         # If new images are provided, update them
-        for image in images[1:]:
-            Images.objects.create(product=product, images=image)
-
+        mul_image=request.FILES.getlist('images')
+        if mul_image:
+            for image in mul_image:
+                im = Images(product=product, images=image)
+                im.save()
         return redirect('product')
     else:
         context = {
@@ -501,6 +509,77 @@ def delete_coupon(request,coupon_id):
     context = {'coupons': coupons}
     return redirect('coupon')
 
+#BANNER
+
+class BannerView(View):
+    template_name = 'main/banner.html'
+
+    def get(self, request, *args, **kwargs):
+        if 'admin' in request.session:
+            banners = Banner.objects.all()
+            context = {'banner': banners}
+            return render(request, self.template_name, context)
+        else:
+            return redirect('admin')
+
+class AddBannerView(View):
+    template_name = 'main/add_banner.html'
+
+    def get(self, request, *args, **kwargs):
+        if 'admin' in request.session:
+            return render(request, self.template_name)
+        else:
+            return redirect('admin')
+
+    def post(self, request, *args, **kwargs):
+        if 'admin' in request.session:
+            form = BannerForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                return redirect('banner')
+            else:
+                return render(request, self.template_name, {'form': form})
+        else:
+            return redirect('admin')
+
+class EditBannerView(View):
+    template_name = 'main/edit_banner.html'
+
+    def get(self, request, banner_id, *args, **kwargs):
+        if 'admin' in request.session:
+            try:
+                banner = Banner.objects.get(id=banner_id)
+            except Banner.DoesNotExist:
+                return render(request, 'product_not_found.html')
+            context = {'banner': banner}
+            return render(request, self.template_name, context)
+        else:
+            return redirect('admin')
+
+   
+
+class UpdateBannerView(View):
+    template_name = 'main/banner.html'
+
+    def post(self, request, banner_id, *args, **kwargs):
+        banner = Banner.objects.get(id=banner_id)
+        form = BannerForm(request.POST, request.FILES, instance=banner)
+        if form.is_valid():
+            form.save()
+            return redirect('banner')
+        else:
+            context = {'banner': banner, 'form': form}
+            return render(request, self.template_name, context)
+
+class DeleteBannerView(View):
+    def get(self, request, banner_id, *args, **kwargs):
+        try:
+            banner = Banner.objects.get(id=banner_id)
+            banner.delete()
+        except Banner.DoesNotExist:
+            return render(request, 'category_not_found.html')
+        return redirect('banner')
+
 
 #-----------------------------------------------------------------------------------------------------------
 #------------------------------------------------USER SIDE--------------------------------------------------
@@ -509,7 +588,12 @@ def delete_coupon(request,coupon_id):
 def base(request):
     return render(request,'base.html')
 def home(request):
-    return render(request,'main/home.html')
+    banners = Banner.objects.all()  # Retrieve all banner objects from the database
+
+    context = {
+        'banner': banners,
+    }
+    return render(request,'main/home.html',context)
 
 # PRODUCT
 def shop(request, category_id=None):
@@ -828,7 +912,8 @@ def changepassword(request):
     return render(request, 'main/changepassword.html', {'form': form})
 
 
-
+@never_cache
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 
 def search_product(request):
     if 'query' in request.GET:
@@ -1330,4 +1415,3 @@ def apply_coupon(request):
         return render(request, 'main/cart.html', context)
     return redirect('cart')    
     
-

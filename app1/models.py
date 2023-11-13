@@ -54,6 +54,7 @@ class Category(models.Model):
 
     def get_url(self):
         return reverse('products_by_category', args=[str(self.id)])
+   
 
     def _str_(self):
         return self.category_name
@@ -81,7 +82,10 @@ class Product(models.Model):
      
 class Images(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+   
+    
     images = models.ImageField(upload_to='products/')
+    
 
 class Cart(models.Model):
        user =  models.ForeignKey(Profile, on_delete=models.CASCADE,null=True,blank=True)
@@ -212,6 +216,7 @@ class Wallet(models.Model):
     def _iter_(self):
         yield self.pk        
         
+class Banner(models.Model):
+    image           = models.ImageField(upload_to='products/', blank=True, null=True)
+    description     =models.CharField(max_length=100)
 
-
-        

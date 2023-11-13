@@ -89,6 +89,7 @@
                     <div class="tab-pane fade show active" id="v-pills-0" role="tabpanel" aria-labelledby="v-pills-0-tab">
                     <div class="container">
                         <div class="row">
+                            {% if products %}
                             {% for product in products %}
                             <div class="col-md-3">
                                 <div class="menu-entry">
@@ -97,38 +98,57 @@
                                     </a>
                                     <div class="text text-center pt-4">
                                         <h3><a href="{% url 'product_details' product.id %}">{{ product.product_name }}</a></h3>
-                                        <p>{{ product.description }}</p>
+                                        <p style="color: white;">{{ product.description }}</p>
                                         <p class="price"><span>INR {{ product.price }}</span></p>
                                         <p><a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-outline-primary">Add to Cart</a></p>
                                     </div>
                                 </div>
                             </div>
                             {% endfor %}
+                            {% else %}
+                                        <div class="col-12">
+                                            <h5>No products available.</h5>
+                                        </div>
+                                    {% endif %}
                         </div>
                     </div>
                 </div>      
-                <!-- <div class="tab-pane fade" id="v-pills-2" role="tabpanel" aria-labelledby="v-pills-2-tab">
-                    <div class="container">
-                        <div class="row">
-                            {% for product in products %}
-                            <div class="col-md-3">
-                                <div class="menu-entry">
-                                    <a href="{% url 'product_details' product.id %}">
-                                        <img src="/media/{{ product.image}}" style="height: 200px; width: 200px;" alt="{{ product.product_name }}">
-                                    </a>
-                                    <div class="text text-center pt-4">
-                                        <h3><a href="{% url 'product_details' product.id %}">{{ product.product_name }}</a></h3>
-                                        <p>{{ product.description }}</p>
-                                        <p class="price"><span>${{ product.price }}</span></p>
-                                        <p><a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-outline-primary">Add to Cart</a></p>
-                                    </div>
+
+
+                <!-- Product Listings (Right Side) -->
+                                <!-- <div class="col-12 col-md-9">
+                                    <div class="row">
+                                    {% if products %}
+                                        {% for product in products %} -->
+                                        <!-- Start Column 1 -->
+                                        <!-- <div class="col-12 col-md-4 col-lg-3 mb-5">
+                                        <a class="product-item" href="/product_details/{{product.id}}">
+                                            <img src="{{ prod.image.url }}" class="img-fluid product-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                            <h3 class="product-title">{{product.product_name}}</h3>
+                                            <p class=" text-muted product-description">{{product.description}}</p>
+                                        
+                                            {% if prod.discounted_price %}
+                                                    <strong class="text-dark ml-2"><del>₹{{ prod.price }}</del></strong>
+                                                    <h6 class="text-success">₹{{ prod.discounted_price }}</h6>
+                                                    
+                                                {% elif prod.offer_price %}
+                                                <strong class="text-dark ml-2"><del>₹{{ prod.price }}</del></strong>
+                                                    <h6 class="text-success">₹{{ prod.offer_price }}</h6>
+                                                    
+                                                {% else %}
+                                                <strong class="product-price">₹{{product.price}}</strong>
+                                                {% endif %}
+                                        </a>
+                                        </div>
+                                    {% endfor %} 
+                                    {% else %}
+                                        <div class="col-12">
+                                            <h5>No products available.</h5>
+                                        </div>
+                                    {% endif %}
                                 </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    </div>
-                  </div> -->
+                                </div> -->
+               
                 </div>
               </div>
             </div>

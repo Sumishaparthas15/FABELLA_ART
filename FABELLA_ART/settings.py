@@ -66,6 +66,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'app1.context.menu_links',
                 
+                
+                
             ],
         },
     },

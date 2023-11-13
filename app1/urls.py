@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import BannerView, AddBannerView, EditBannerView, UpdateBannerView, DeleteBannerView
+
 
 from .import views 
 
@@ -20,6 +22,7 @@ urlpatterns = [
     
     path('category/',views.category,name='category'),
     path('add_category/',views.add_category,name='add_category'),
+    
     path('category/<int:id>/update_category/',views.update_category,name='update_category'),
     path('category/<int:category_id>/edit_category/', views.edit_category, name='edit_category'),
     path('category/<int:category_id>/delete_category/',views.delete_category,name='delete_category'),
@@ -40,7 +43,11 @@ urlpatterns = [
     path('search-customer/', views.search_customer, name='search_customer'),
     
 
-    
+    path('banner/', BannerView.as_view(), name='banner'),
+    path('add_banner/', AddBannerView.as_view(), name='add_banner'),
+    path('edit_banner/<int:banner_id>/', EditBannerView.as_view(), name='edit_banner'),
+    path('update_banner/<int:banner_id>/', UpdateBannerView.as_view(), name='update_banner'),
+    path('delete_banner/<int:banner_id>/', DeleteBannerView.as_view(), name='delete_banner'),
     # -----------------------------------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------------------------
     #-------------------------------------------------------------------------------------------------------------------------
@@ -51,13 +58,14 @@ urlpatterns = [
     path('',views.home,name='home'),
     #shop
     path('shop/', views.shop, name='shop'),
+    path('shop/<int:category_id>/', views.shop, name='products_by_category'),
     path('product_list/', views.product_list, name='product_list'),
    
     path('product/<int:product_id>/', views.product, name='product'),
     path('product_details/<int:product_id>/', views.product_details, name='product_details'),
     path('search/', views.search_product, name='search_product'),
     path('save_review/<int:product_id>/', views.save_review, name='save_review'),
-    path('shop/<int:category_id>/', views.shop, name='products_by_category'),
+    
     
     
     #sign in
@@ -121,9 +129,8 @@ urlpatterns = [
 
     #wallet
     path('wallet/', views.wallet, name='wallet'),
-  
-  
 
+   
     
      
     
