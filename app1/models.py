@@ -76,6 +76,8 @@ class Product(models.Model):
     price = models.IntegerField(default=0)
     image = models.ImageField(upload_to='products/' , blank=True , null= True)
     size = models.CharField(max_length=50, blank=True, null=True)
+    deleted        =     models.BooleanField(default=False)
+    
 
     def _iter_(self):
         yield self.id
@@ -220,3 +222,6 @@ class Banner(models.Model):
     image           = models.ImageField(upload_to='products/', blank=True, null=True)
     description     =models.CharField(max_length=100)
 
+class Contact(models.Model):
+    user  =models.ForeignKey(Profile, on_delete=models.CASCADE,null=True,blank=True)
+    message = models.CharField(max_length=1000, null=True, blank=True)

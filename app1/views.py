@@ -38,6 +38,14 @@ from django.shortcuts import render, redirect
 from django.views import View
 from .models import Banner
 from .forms import BannerForm
+import io
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
 
 
 import json
@@ -390,10 +398,10 @@ def update_product(request, product_id):
 def delete_product(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
+        product.deleted = True
+        product.save()
     except Product.DoesNotExist:
-        return render(request, 'category_not_found.html')
-
-    product.delete()
+         return render(request, 'product_not_found.html')
 
     return redirect('product')
 
@@ -1415,3 +1423,43 @@ def apply_coupon(request):
         return render(request, 'main/cart.html', context)
     return redirect('cart')    
     
+def invoice(request, id):
+    # 1. Fetch the order and items
+    user = request.user
+    orders = Order.objects.filter(id=id)
+    order_items = OrderItem.objects.filter(order=id)
+     
+    for order in orders:
+        address= order.address
+
+        for item in order_items:
+            # 2. Render the order and items to an HTML template
+            rendered = render_to_string('main/invoice.html', {'order': order, 'item': item, 'address': address})
+
+            # 3. Convert the rendered HTML to PDF
+            output = io.BytesIO()
+            pdf = pisa.CreatePDF(rendered, output)
+            pdf_data = output.getvalue()
+            # 4. Send the PDF as an email attachment
+            msg = MIMEMultipart()
+            msg['From'] = 'sumishasudha392@@gmail.com'
+            msg['To'] = order.user.email
+            msg['Subject'] = 'Invoice from FABELLA_ART'
+            attachment = MIMEBase('application', 'octet-stream')
+            attachment.set_payload(pdf_data)
+            encoders.encode_base64(attachment)
+            attachment.add_header('Content-Disposition', 'attachment; filename=invoice.pdf')
+            msg.attach(attachment)
+            try:
+                smtp_server = 'smtp.gmail.com'
+                smtp_port = 587
+                smtp_username = 'sumishasudha392@gmail.com'
+                smtp_password = 'xhywblrweffmdeyj'
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                server.starttls()
+                server.login(smtp_username, smtp_password)
+                server.sendmail(msg['From'], msg['To'], msg.as_string())
+                server.quit()
+            except Exception as e:
+                return HttpResponse(f'Email sending failed: {str(e)}')
+    return HttpResponse('Emails sent successfully!')

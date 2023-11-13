@@ -130,7 +130,7 @@ urlpatterns = [
     #wallet
     path('wallet/', views.wallet, name='wallet'),
 
-   
+    path('invoice/<int:id>/',views.invoice,name='invoice'),
     
      
     
