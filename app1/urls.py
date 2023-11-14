@@ -38,6 +38,8 @@ urlpatterns = [
     path('product/<int:product_id>/edit_product/', views.edit_product, name='edit_product'),
     path('product/<int:product_id>/update_product/',views.update_product,name='update_product'),
     path('product/<int:product_id>/delete_product/',views.delete_product,name='delete_product'),
+    path('product/<int:product_id>/restore_product/', views.restore_product, name='restore_product'),
+
     path('orders/',views.orders,name='orders'),
     path('update_order_status/', views.update_order_status, name='update_order_status'),
     path('search-customer/', views.search_customer, name='search_customer'),
@@ -48,6 +50,9 @@ urlpatterns = [
     path('edit_banner/<int:banner_id>/', EditBannerView.as_view(), name='edit_banner'),
     path('update_banner/<int:banner_id>/', UpdateBannerView.as_view(), name='update_banner'),
     path('delete_banner/<int:banner_id>/', DeleteBannerView.as_view(), name='delete_banner'),
+    path('adminside_message/',views.adminside_message,name='adminside_message'),
+    path('reply/',views.reply,name='reply'),
+    
     # -----------------------------------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------------------------
     #-------------------------------------------------------------------------------------------------------------------------
@@ -131,7 +136,7 @@ urlpatterns = [
     path('wallet/', views.wallet, name='wallet'),
 
     path('invoice/<int:id>/',views.invoice,name='invoice'),
-    
+    path('contact/',views.contact,name='contact'),
      
     
     

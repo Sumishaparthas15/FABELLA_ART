@@ -46,7 +46,7 @@ from email import encoders
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
-
+from email.mime.text import MIMEText
 
 import json
 from decimal import Decimal
@@ -587,6 +587,31 @@ class DeleteBannerView(View):
         except Banner.DoesNotExist:
             return render(request, 'category_not_found.html')
         return redirect('banner')
+def delete_product(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        product.deleted = True
+        product.save()
+    except Product.DoesNotExist:
+         return render(request, 'product_not_found.html')
+
+    return redirect('product')
+
+def restore_product(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        product.deleted = False  
+        product.save()
+    except Product.DoesNotExist:
+        pass
+    return redirect('product')
+def adminside_message(request):
+    customer_messages=Contact.objects.all()
+    context={
+        'customer_messages':customer_messages
+    }
+    return render(request,'main/adminside_message.html',context)
+
 
 
 #-----------------------------------------------------------------------------------------------------------
@@ -1343,6 +1368,7 @@ def restock_products(order):
         product = order_item.product
         product.stock += order_item.quantity
         product.save() 
+
 def return_product(request, order_id):
     user = request.user
     usercustm = Profile.objects.get(email=user)
@@ -1463,3 +1489,47 @@ def invoice(request, id):
             except Exception as e:
                 return HttpResponse(f'Email sending failed: {str(e)}')
     return HttpResponse('Emails sent successfully!')
+def contact(request):
+    context = {}  
+    if request.method=='POST':
+        user=request.user
+        message = request.POST.get('message')
+        
+        # Save the message to the database
+        contact = Contact(user=user,message=message)
+        contact.save()
+        messages.success(request,'Thank you for contacting us!')
+
+        return redirect('contact') 
+    return render(request,'main/contact.html',context)
+def reply(request):
+    if request.method == 'POST':
+        user_email = request.POST.get('email')
+        message_content = request.POST.get('message')
+
+        subject = 'Message from FABELLA_ART'
+        from_email = 'sumishasudha392@gmail.com'
+        to_email = user_email
+
+        # Create the MIME message
+        msg = MIMEMultipart()
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(message_content, 'plain'))
+
+        # try:
+        smtp_server = 'smtp.gmail.com'
+        smtp_port = 587
+        smtp_username = 'sumishasudha392@gmail.com'
+        smtp_password = 'xhywblrweffmdeyj'
+        # Connect to the server and send the email
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+        server.quit()
+
+    messages.success(request, 'Email sent successfully.')
+    return redirect('adminside_message')
+ 
