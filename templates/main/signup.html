@@ -2,75 +2,105 @@
 {% block content %}
 
 {% load static %}
-<!-- <section class="home-slider owl-carousel">
 
-    <div class="slider-item" style="background-image: url({% static 'images/bg4.jpg' %});" data-stellar-background-ratio="0.5">
-        <div class="overlay"></div>
-      <div class="container">
-        <div class="row slider-text justify-content-center align-items-center">
-
-          <div class="col-md-7 col-sm-12 text-center ftco-animate">
-              <h1 class="mb-3 mt-5 bread">SignUp</h1>
-              <p class="breadcrumbs"><span class="mr-2"><a href="{% url 'home' %}">Home</a></span> <span>Signup</span></p>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </section> -->
-
-<div class="slider-item" style="background-image: url({% static 'images/bg_4.jpg' })">
 <div class="container mt-5 pt-4">
-    
     <div class="col-6 mx-auto">
         <br><br>
         <h3 class="text-center" style="color: black;">Sign up</h3>
-        <form method="post">
+        <form method="post" onsubmit="return validateSignupForm()">
             {% csrf_token %}
-            
+
             {% for message in messages %}
             <div class="alert alert-{{ message.tags }}">
                 {{ message }}
             </div>
             {% endfor %}
-    
-            <div class="row">
-                <div class="form-group col-12">
-                    <input type="text" placeholder="Name" class="form-control" name="name" id="">
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group col-12">
-                    <input type="text" placeholder="Email" class="form-control" name="email" id="">
-                </div>
-            </div>
-    
-            <!-- Add similar fields for Mobile, Password, and Confirm Password here -->
-    
-            <div class="row">
-                <div class="form-group col-12">
-                    <input type="text" placeholder="Mobile" class="form-control" name="number" id="">
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group col-12">
-                    <input type="password" placeholder="Password" class="form-control" name="password" id="">
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group col-12">
-                    <input type="password" placeholder="Confirm password" class="form-control" name="confirmpassword" id="">
-                </div>
-            </div>
-    
-        
 
-            <p>Already have an account ? <a href="{% url 'userlogin' %}">Login</a></p>
+            <div class="row">
+                <div class="form-group col-12">
+                    <input type="text" placeholder="Name" class="form-control" name="name" id="id_name">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-12">
+                    <input type="text" placeholder="Email" class="form-control" name="email" id="id_email">
+                </div>
+            </div>
+
+            <!-- Add similar fields for Mobile, Password, and Confirm Password here -->
+
+            <div class="row">
+                <div class="form-group col-12">
+                    <input type="text" placeholder="Mobile" class="form-control" name="number" id="id_number">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-12">
+                    <input type="password" placeholder="Password" class="form-control" name="password" id="id_password">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-12">
+                    <input type="password" placeholder="Confirm password" class="form-control" name="confirmpassword" id="id_confirmpassword">
+                </div>
+            </div>
+
+            <p>Already have an account? <a href="{% url 'userlogin' %}">Login</a></p>
             <button class="btn btn-primary">Submit</button>
         </form>
     </div>
+</div>
+<script>
+    function validateSignupForm() {
+        var name = document.getElementById('id_name').value;
+        var email = document.getElementById('id_email').value;
+        var phone = document.getElementById('id_number').value;
+        var password = document.getElementById('id_password').value;
+        var confirmPassword = document.getElementById('id_confirmpassword').value;
 
-</div>
-</div>
+        // Validate email format
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Invalid email format');
+            return false;
+        }
+
+        // Validate phone number (simple check for numeric value)
+        if (isNaN(phone) || phone.length < 10) {
+            alert('Invalid phone number');
+            return false;
+        }
+
+        // Validate password length
+        if (password.length < 6) {
+            alert('Password must be at least 6 characters');
+            return false;
+        }
+
+        // Validate password complexity
+        var passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/;
+        if (!passwordRegex.test(password)) {
+            alert('Password must contain at least one alphabet, one number, and one special character');
+            return false;
+        }
+
+        // Validate password match
+        if (password !== confirmPassword) {
+            alert('Password mismatch');
+            return false;
+        }
+
+        // Validate name (optional)
+        var nameRegex = /^[A-Za-z]{6,}$/; // at least 6 letters
+        if (!nameRegex.test(name)) {
+            alert('Name must contain only letters and be at least 6 characters long');
+            return false;
+        }
+
+        // If all validations pass, submit the form
+        return true;
+    }
+</script>
+
 
 {% endblock %}

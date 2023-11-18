@@ -54,7 +54,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.units import inch
 from django.http import FileResponse
-
+from django.db import DataError
 from decimal import Decimal
 from datetime import datetime
 import json
@@ -865,7 +865,7 @@ def product_details(request, product_id):
     return render(request, 'main/productdetails.html', context)
 
 
-# SIGN UP
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def signup(request):
@@ -878,47 +878,55 @@ def signup(request):
         password = request.POST.get('password')
         confirmpassword = request.POST.get('confirmpassword')
 
-        if not (name and email and password and phone_number and confirmpassword):
-            messages.info(request, "!Please Fill Required Fields")
-            return redirect('signup')
-
-        if password != confirmpassword:
-            messages.info(request, "Password Mismatch")
-            return redirect('signup')
-
-        if Profile.objects.filter(email=email).exists():
-            messages.info(request, "Email Already Taken")
-            return redirect('signup')
-        if Profile.objects.filter(number=phone_number).exists():
-            messages.info(request, "Phone Number Already Taken")
-            return redirect('signup')
-
-        # Create the user using CustomUser model
-        user = Profile.objects.create_user(email=email, password=password, username=name, number=phone_number)
-        user.save()
-
-        message = generate_otp()
-        sender_email = "sumishasudha392@gmail.com"
-        receiver_mail = email
-        password_email = "xhywblrweffmdeyj"
-
         try:
-            with smtplib.SMTP("smtp.gmail.com", 587) as server:
-                server.starttls()
-                server.login(sender_email, password_email)
-                server.sendmail(sender_email, receiver_mail, message)
+            if not (name and email and password and phone_number and confirmpassword):
+                messages.info(request, "!Please Fill Required Fields")
+                return redirect('signup')
 
-        except smtplib.SMTPAuthenticationError:
-            messages.error(request, 'Failed to send OTP email. Please check your email configuration.')
-            return redirect('login')
+            if password != confirmpassword:
+                messages.info(request, "Password Mismatch")
+                return redirect('signup')
 
-        request.session['email'] = email
-        request.session['otp'] = message
-        messages.success(request, 'OTP is sent to your email')
+            if Profile.objects.filter(email=email).exists():
+                messages.info(request, "Email Already Taken")
+                return redirect('signup')
+            
+            if Profile.objects.filter(number=phone_number).exists():
+                messages.info(request, "Phone Number Already Taken")
+                return redirect('signup')
 
-        return redirect('verify_signup')
+            # Create the user using CustomUser model
+            user = Profile.objects.create_user(email=email, password=password, username=name, number=phone_number)
+            user.save()
+
+            message = generate_otp()
+            sender_email = "sumishasudha392@gmail.com"
+            receiver_mail = email
+            password_email = "xhywblrweffmdeyj"
+
+            try:
+                with smtplib.SMTP("smtp.gmail.com", 587) as server:
+                    server.starttls()
+                    server.login(sender_email, password_email)
+                    server.sendmail(sender_email, receiver_mail, message)
+
+            except smtplib.SMTPAuthenticationError:
+                messages.error(request, 'Failed to send OTP email. Please check your email configuration.')
+                return redirect('login')
+
+            request.session['email'] = email
+            request.session['otp'] = message
+            messages.success(request, 'OTP is sent to your email')
+
+            return redirect('verify_signup')
+
+        except DataError as e:
+            # Handle the specific DataError related to the phone number length
+            messages.error(request, 'Invalid phone number. Please enter a valid phone number.')
+            return redirect('signup')
 
     return render(request, 'main/signup.html')
+
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache
 def verify_signup(request):
