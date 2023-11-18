@@ -51,6 +51,8 @@ class Address(models.Model):
 
 class Category(models.Model):
     category_name=models.CharField(max_length=100)
+    category_offer_description = models.CharField(max_length=100, null=True, blank=True)
+    category_offer = models.PositiveBigIntegerField(default=0)
 
     def get_url(self):
         return reverse('products_by_category', args=[str(self.id)])
@@ -75,8 +77,9 @@ class Product(models.Model):
     stock = models.IntegerField(default=0)
     price = models.IntegerField(default=0)
     image = models.ImageField(upload_to='products/' , blank=True , null= True)
-    size = models.CharField(max_length=50, blank=True, null=True)
+    
     deleted        =     models.BooleanField(default=False)
+    product_offer =      models.DecimalField(max_digits=5, decimal_places=2,max_length=100, blank=True, null=True)
     
 
     def _iter_(self):

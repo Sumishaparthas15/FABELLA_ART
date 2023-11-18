@@ -47,9 +47,18 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 from email.mime.text import MIMEText
+import io
+import base64
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.units import inch
+from django.http import FileResponse
 
-import json
 from decimal import Decimal
+from datetime import datetime
+import json
+import matplotlib.pyplot as plt
 
 # ADMIN LOGIN
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
@@ -83,8 +92,27 @@ def admin_logout(request):
     logout(request)
     return redirect('admin_login')
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@never_cache
 def dashboard(request):
-    return render(request,'main/dashboard.html')
+    if 'admin' in request.session:
+        products = Product.objects.order_by('-id')
+        
+        order_labels = [f'Order {product.id}' for product in products]
+        order_amounts = [product.price for product in products]  
+        stock_labels = [product.product_name for product in products]
+        stock_amounts = [product.stock for product in products]
+        order_data = json.dumps(order_amounts)
+        stock_data = json.dumps(stock_amounts)
+        context = {
+            'order_labels': order_labels,
+            'order_data': order_data,
+            'stock_labels': stock_labels,
+            'stock_data': stock_data,
+        }
+        return render(request, 'main/dashboard.html', context)
+    else:
+        return redirect('admin')
 # CUSTOMER
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache
@@ -118,8 +146,6 @@ def unblock_customer(request, customer_id):
 def category(request):
     if 'admin' in request.session:
         categories = Category.objects.all().order_by('id')
-        
-        
         paginator = Paginator(categories, per_page=3)  
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -130,20 +156,33 @@ def category(request):
         return render(request, 'main/category.html', context)
     else:
         return redirect('admin')
-@cache_control(no_cache=True,must_revalidate=True,no_store=True)
-@never_cache          
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@never_cache
 def add_category(request):
     if 'admin' in request.session:
-        if request.method  == 'POST':
-           
-            category_name       =   request.POST.get('category_name')
-            category = Category.objects.create(category_name = category_name)   
-            category.save() 
+        if request.method == 'POST':
+            category_name = request.POST.get('category_name')
+            category_offer_description = request.POST.get('category_offer_description')
+            category_offer = request.POST.get('category_offer')
 
-            return redirect('category')  
-        return render(request, 'main/addcategory.html') 
+            # Create a new Category instance with the provided data
+            category = Category.objects.create(
+                category_name=category_name,
+                category_offer_description=category_offer_description,
+                category_offer=category_offer
+            )
+            
+            # Save the new category to the database
+            category.save()
+
+            return redirect('category')
+        
+        return render(request, 'main/addcategory.html')
+    
     else:
-        return redirect ('admin')
+        return redirect('admin')
+
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache  
 def update_category(request, id):
@@ -154,8 +193,13 @@ def update_category(request, id):
 
     if request.method == 'POST':
         category_name = request.POST.get('category_name')
+        category_offer_description  =request.POST.get('category_offer_description')
+        category_offer  =request.POST.get('category_offer')
         if category_name:
             category.category_name           =  category_name
+            category.category_offer_description  =category_offer_description
+            category.category_offer              =category_offer
+            
         category.save()
         return redirect('category')
 
@@ -181,9 +225,10 @@ def delete_category(request,category_id):
         return render(request, 'category_not_found.html')
 
     category.delete()
-
+    categories = Category.objects.all()
+    context = {'categories': categories}
     
-    return redirect('category')
+    return render(request, 'main/category.html', context)
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache  
 def sub_category(request):
@@ -310,8 +355,8 @@ def add_product(request):
             stock = request.POST.get('stock')
             price = request.POST.get('price')
             images = request.FILES.get('images')  # Get all uploaded images
-            print(images,"222222222222222222222222222222222")
-            size = request.POST.get('size')  # Add size
+            product_offer = request.POST.get('product_offer')
+            
 
             try:
                 subcategory_id = Sub_category.objects.get(id=subcategory_id)
@@ -326,7 +371,7 @@ def add_product(request):
                 category_id=main_category_id,
                 stock=stock,
                 price=price,
-                size=size,
+                product_offer=product_offer,
                 image = images  # Add size
             )
 
@@ -358,57 +403,67 @@ def edit_product(request, product_id):
         return render(request, 'main/editproduct.html', context)
     else:
         return redirect('admin')
-@cache_control(no_cache=True,must_revalidate=True,no_store=True)
-@never_cache  
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@never_cache
 def update_product(request, product_id):
     product = Product.objects.get(id=product_id)
-
+    
     if request.method == 'POST':
         product.product_name = request.POST.get('product_name')
         product.description = request.POST.get('description')
-        category_name = request.POST.get('category')
-        category = Category.objects.get(category_name=category_name)
-        product.category = category
+        
+        if request.POST.get('category'):
+            category_name = request.POST.get('category')
+            category = Category.objects.get(category_name=category_name)
+            product.category = category
+
+        product.color = request.POST.get('color')
         product.stock = request.POST.get('stock')
+        product.product_offer = request.POST.get('product_offer')  # Modified from 'offer' to 'product_offer'
         product.price = request.POST.get('price')
-        size = request.POST.get('size')  # Add size
-        images = request.FILES.getlist('images')  # Get multiple images
-
-        if size:
-            product.size = size  # Update the size field
-
-        # Only update the images if new ones are provided
-        if images:
-            product.image = images[0]  # Update the first image
-
+        
+        image = request.FILES.get('image')
+        if image:
+            product.image = image
+        
         product.save()
-
-        # If new images are provided, update them
-        mul_image=request.FILES.getlist('images')
+        
+        mul_image = request.FILES.getlist('images')
         if mul_image:
             for image in mul_image:
                 im = Images(product=product, images=image)
                 im.save()
+
         return redirect('product')
+    
     else:
         context = {
-            'product': product
+            'product': product,
         }
         return render(request, 'main/product.html', context)
+
 def delete_product(request, product_id):
     try:
-        product = Product.objects.get(id=product_id)
-        product.deleted = True
-        product.save()
+        # Retrieve the product or return a 404 response if it doesn't exist
+        product = get_object_or_404(Product, id=product_id, deleted=False)
     except Product.DoesNotExist:
-         return render(request, 'product_not_found.html')
+        return render(request, 'product_not_found.html')
 
+    # Check if the product is already deleted
+    if product.deleted:
+        return render(request, 'product_already_deleted.html', {'product': product})
+
+    # Set the 'deleted' flag to True
+    product.deleted = True
+    product.save()
+
+    # Redirect to the product list or any other desired page
     return redirect('product')
-
 #ORDERS 
 def orders(request):
     if 'admin' in request.session:
-        orders = Order.objects.all()
+        orders = Order.objects.all().order_by('-id')
+
 
         
         print(orders)
@@ -611,12 +666,110 @@ def adminside_message(request):
         'customer_messages':customer_messages
     }
     return render(request,'main/adminside_message.html',context)
+# Create bar chart function
+def create_bar_chart(labels, data, title):
+    plt.figure(figsize=(8, 6))
+    plt.bar(labels, data, color='skyblue')
+    plt.xlabel('Products')
+    plt.ylabel('Amount')
+    plt.title(title)
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    chart_image = base64.b64encode(buffer.getvalue()).decode()
+    buffer.close()
+    return f'data:image/png;base64,{chart_image}'
+
+
+# pie chart function
+def create_pie_chart(labels, data, title):
+    plt.figure(figsize=(8, 8))
+    plt.pie(data, labels=labels, autopct='%1.1f%%', startangle=140)
+    plt.title(title)
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    chart_image = base64.b64encode(buffer.getvalue()).decode()
+    buffer.close()
+    return f'data:image/png;base64,{chart_image}'
+
+
+def report_generator(request, orders):
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
+    story = []
+
+    data = [["Order ID", "Total Quantity", "Product IDs", "Product Names", "Amount"]]
+
+    for order in orders:
+        # Retrieve order items associated with the current order
+        order_items = OrderItem.objects.filter(order=order)
+        total_quantity = sum(item.quantity for item in order_items)
+
+        if order_items.exists():
+            product_ids = ", ".join([str(item.product.id) for item in order_items])
+            product_names = ", ".join([str(item.product.product_name) for item in order_items])
+        else:
+            product_ids = "N/A"
+            product_names = "N/A"
+
+        data.append([order.id, total_quantity, product_ids, product_names, order.amount])
+
+    # Create a table with the data
+    table = Table(data, colWidths=[1 * inch, 1.5 * inch, 2 * inch, 3 * inch, 1 * inch])
+
+    # Style the table
+    table_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.gray),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ])
+    table.setStyle(table_style)
+
+    # Add the table to the story and build the document
+    story.append(table)
+    doc.build(story)
+
+    buf.seek(0)
+    return FileResponse(buf, as_attachment=True, filename='orders_report.pdf')
+
+def report_pdf_order(request):
+    if request.method == 'POST':
+        from_date = request.POST.get('from_date')
+        to_date = request.POST.get('to_date')
+        try:
+            from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+            to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+        except ValueError:
+            return HttpResponse('Invalid date format.')
+        orders = Order.objects.filter(date__range=[from_date, to_date]).order_by('-id')
+        return report_generator(request, orders)
+
+def chart_demo(request):
+    orders = Order.objects.order_by('-id')[:5]
+    labels = []
+    data = []
+    for order in orders:
+        labels.append(str(order.id))
+        data.append(order.amount)
+    context = {
+        'labels': json.dumps(labels),
+        'data': json.dumps(data),
+    }
+    return render(request, 'main/chart_demo.html', context)
+
+
 
 
 
 #-----------------------------------------------------------------------------------------------------------
 #------------------------------------------------USER SIDE--------------------------------------------------
-#-------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 
 def base(request):
     return render(request,'base.html')
@@ -629,17 +782,31 @@ def home(request):
     return render(request,'main/home.html',context)
 
 # PRODUCT
+
+
 def shop(request, category_id=None):
+    
     products = None
     product_count = 0
+    all_products = Product.objects.all()
 
     if category_id:
         category = get_object_or_404(Category, id=category_id)
-        products = Product.objects.filter(category=category)
+        products = Product.objects.filter(category=category, deleted=False)
         product_count = products.count()
     else:
-        products = Product.objects.all()
+        products = Product.objects.filter(deleted=False)
         product_count = products.count()
+        products = all_products
+    for product in products:
+        discounted_price = None
+        if product.category.category_offer:
+            discounted_price = (product.price - (product.price*product.category.category_offer/100))
+        product.discounted_price = discounted_price
+        offer_price = None
+        if product.product_offer:
+            offer_price        =  product.price -(product.price * product.product_offer/100)
+        product.offer_price    =  offer_price
 
     # Price filter
     min_price = request.GET.get("min_price")
@@ -650,30 +817,49 @@ def shop(request, category_id=None):
     if max_price is not None:
         products = products.filter(price__lte=max_price)
 
+    # Fetch category and product offers
+    category_offer = None
+    product_offer = None
+
+    if category_id:
+        category_offer = category.category_offer
+
     context = {
         'products': products,
+        'all_products': all_products,
         'product_count': product_count,
         'min_price': min_price,
         'max_price': max_price,
+        'category_offer': category_offer,
+        'product_offer': product_offer,
     }
 
     return render(request, 'main/shop.html', context)
 
 def product_list(request):
-    product_list = Product.objects.all()
+    product_list = Product.objects.filter(deleted=False)
     paginator = Paginator(product_list, 12)  # 12 products per page
     page_number = request.GET.get('page')
     products = paginator.get_page(page_number)
     return render(request, 'main/shop.html', {'products': products})
+
 def product_details(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     product_images = product.images_set.all()  # Access the related images using 'images_set'
-    review_form = ProductReviewForm()
+    discounted_price = None
+    offer_price = None
+    if product.category.category_offer:
+        discounted_price = (product.price - (product.price*product.category.category_offer/100))
+    product.discounted_price = discounted_price
+    if product.product_offer:
+        offer_price        = product.price -(product.price * product.product_offer/100)
+    product.offer_price    = offer_price
 
     context = {
         'product': product,
         'product_images': product_images,
-        'review_form': review_form,
+        'discounted_price': discounted_price, 
+        
     }
 
     return render(request, 'main/productdetails.html', context)
@@ -766,6 +952,8 @@ def verify_signup(request):
     return render(request,'main/verify_otp.html',context)
 def generate_otp(length = 6):
     return ''.join(secrets.choice("0123456789") for i in range(length)) 
+@cache_control(no_cache=True,must_revalidate=True,no_store=True)
+@never_cache
 def user_login(request):
     if 'email' in request.session:
         return redirect('home')
@@ -778,8 +966,11 @@ def user_login(request):
             if not user.is_superuser:
                 if user.check_password(password):
                     # Log in the user
-                    login(request, user)
-                    return redirect('home')
+                    if user is not None:
+                        login(request, user)
+                        request.session['email']=email
+                        return redirect('home')         
+                    
                 else:
                     messages.error(request, 'Email and password are invalid!')
             else:
@@ -789,14 +980,17 @@ def user_login(request):
 
     return render(request, 'main/login.html')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@never_cache 
+@never_cache
 def userlogout(request):
     if 'email' in request.session:
-        request.session.flush()
         logout(request)
-    return redirect('userlogin')
+           
+        request.session.flush()
 
+    return redirect('userlogin')
 # USER PROFILE
+@cache_control(no_cache=True,must_revalidate=True,no_store=True)
+@never_cache
 def profile(request):
     user = request.user
     if not user.is_superuser:
@@ -808,6 +1002,8 @@ def profile(request):
     else:
         return redirect('verified_login')
     return render(request,'main/userprofile.html',context)
+@cache_control(no_cache=True,must_revalidate=True,no_store=True)
+@never_cache
 @login_required(login_url='verified_login')
 def profile_update(request):  
     if request.method == 'POST':
@@ -827,6 +1023,8 @@ def profile_update(request):
     return redirect('profile')
 
 # ADDRESS
+@cache_control(no_cache=True,must_revalidate=True,no_store=True)
+@never_cache
 @login_required(login_url='verified_login')   
 def address(request):
     address_list = Address.objects.filter(user=request.user).order_by('-id')
@@ -861,7 +1059,7 @@ def add_address(request):
             zip = pincode
         )
         new.save()
-        return redirect('add_address') 
+        return redirect('address') 
         
     return render(request,'main/addaddress.html')  
 def shipping_add_address(request):
@@ -930,41 +1128,146 @@ def verified_login(request):
 @login_required
 def changepassword(request):
     if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Update the user's session with the new password
-            messages.success(request, 'Your password was successfully changed.')
-            return redirect('changepassword')  # Redirect back to the change password page
+        old_password = request.POST.get('old')
+        new_password = request.POST.get('new_password1')
+        confirm_password = request.POST.get('new_password2')
+
+        # Get the user from the request
+        customer = request.user
+
+        if customer.check_password(old_password):
+            if new_password == confirm_password:
+                customer.set_password(new_password)
+                customer.save()
+
+                # Update the user's session with the new password
+                update_session_auth_hash(request, customer)
+
+                messages.success(request, 'Password changed successfully.')
+                return redirect('home')
+            else:
+                messages.error(request, 'New password and confirm password do not match.')
+                return redirect('changepassword')
         else:
-            messages.error(request, 'Please correct the error(s) below.')
+            messages.error(request, 'Old password is incorrect.')
+            return redirect('changepassword')
 
+    return render(request, 'main/changepassword.html')
+def forgotpassword(request):
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            customer = Profile.objects.get(email=email) 
+            if customer.email == email:
+                message = generate_otp()
+                sender_email = "sumishasudha392@gmail.com"
+                receiver_mail = email
+                password_email = "xhywblrweffmdeyj"
+                try:
+                    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+                        server.starttls()
+                        server.login(sender_email, password_email)
+                        server.sendmail(sender_email, receiver_mail, message)
+                except smtplib.SMTPAuthenticationError:
+                    messages.error(request, 'Failed to send OTP email. Please check your email configuration.')
+                    return redirect('signup') 
+                request.session['email'] =  email
+                request.session['otp']   =  message
+                messages.success (request, 'OTP is sent to your email')
+                return redirect('reset_password')         
+        except Profile.DoesNotExist:
+            messages.info(request,"Email is not valid")
+            return redirect('userlogin')
     else:
-        form = PasswordChangeForm(request.user)
+        return redirect('userlogin')
 
-    return render(request, 'main/changepassword.html', {'form': form})
+def reset_password(request):
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        stored_otp = request.session.get('otp')
+        if entered_otp == stored_otp:
+            if new_password == confirm_password:
+                email = request.session.get('email')
+                try:
+                    customer = Profile.objects.get(email=email)
+                    customer.set_password(new_password)
+                    customer.save()
+                    del request.session['email'] 
+                    del request.session['otp']
+                    messages.success(request, 'Password reset successful. Please login with your new password.')
+                    return redirect('userlogin')
+                except Profile.DoesNotExist:
+                    messages.error(request, 'Failed to reset password. Please try again later.')
+                    return redirect('userlogin')
+            else:
+                messages.error(request, 'New password and confirm password do not match.')
+                return redirect('reset_password')
+        else:
+            messages.error(request, 'Invalid OTP. Please enter the correct OTP.')
+            return redirect('reset_password')
+    else:
+        return render(request, 'main/forgotpassword.html')    
 
 
 @never_cache
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def search_product(request, category_id=None):
+    products = None
+    product_count = 0
 
-def search_product(request):
     if 'query' in request.GET:
         query = request.GET['query']
 
-
         if query:
-            products = Product.objects.filter(Q(description__icontains=query) | Q(product_name__icontains=query))
-            product_count = products.count()
-       
+            if category_id:
+                category = get_object_or_404(Category, id=category_id)
+                products = Product.objects.filter(
+                    Q(description__icontains=query) | Q(product_name__icontains=query),
+                    category=category,
+                    deleted=False
+                )
+            else:
+                # If no category_id is provided, filter products based on the query only
+                products = Product.objects.filter(
+                    Q(description__icontains=query) | Q(product_name__icontains=query),
+                    deleted=False
+                )
+
+    # Fetch category and product offers
+    category_offer = None
+    product_offer = None
+
+    if category_id:
+        category_offer = category.category_offer
+
+    # Apply offer calculations to each product
+    for product in products:
+        discounted_price = None
+        if category_offer:
+            discounted_price = (product.price - (product.price * category_offer / 100))
+        product.discounted_price = discounted_price
+
+        offer_price = None
+        if product.product_offer:
+            offer_price = product.price - (product.price * product.product_offer / 100)
+        product.offer_price = offer_price
+
     context = {
-        'products':products,
-        'product_count':product_count,
+        'search_results': products,
+        'product_count': products.count(),
+        'category_offer': category_offer,
+        'product_offer': product_offer,
     }
 
-    return render(request, 'main/shop.html',context)
+    return render(request, 'main/search.html', context)
+
 
 # WISHLIST
+@login_required(login_url='verified_login')
+
 def wishlist(request):
     user = request.user
     wish = WishList.objects.filter(user=user)
@@ -1031,8 +1334,8 @@ def category_view(request, category_id):
 
 
 #cart
-@never_cache
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+
+@login_required(login_url='verified_login')
 def cart(request):
     if 'discount' in request.session:
         del request.session['discount']
@@ -1046,7 +1349,14 @@ def cart(request):
             cart_item.quantity = cart_item.product.stock
             cart_item.save()
             item_price = Decimal(0) 
-        
+        if cart_item.product.category.category_offer:
+            item_price = (cart_item.product.price - (cart_item.product.price*cart_item.product.category.category_offer/100)) * cart_item.quantity
+            total_dict[cart_item.id] = item_price
+            subtotal += item_price
+        elif cart_item.product.product_offer:
+            item_price = (cart_item.product.price - (cart_item.product.price * cart_item.product.product_offer/100)) * cart_item.quantity
+            total_dict[cart_item.id] = item_price
+            subtotal += item_price
         else:
             item_price = cart_item.product.price * cart_item.quantity
             total_dict[cart_item.id] = item_price
@@ -1068,11 +1378,13 @@ def cart(request):
         'cart_items': cart_items,
         'subtotal': subtotal,
         'total': total,
-        'coupons': coupons,   
+        'coupons': coupons,
+           
     }
     return render(request, 'main/cart.html', context)
 @never_cache
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
+@login_required(login_url='verified_login')
 def add_to_cart(request, product_id):
     try: 
         product = Product.objects.get(id=product_id)
@@ -1121,12 +1433,19 @@ def remove_from_cart(request,product_id):
 
 @never_cache
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url='verified_login')
 def checkout(request): 
     user = request.user
     cart_items = Cart.objects.filter(user=user)
     subtotal = 0
     for cart_item in cart_items:
-        
+        if cart_item.product.category.category_offer:
+            item_price = (cart_item.product.price - (cart_item.product.price*cart_item.product.category.category_offer/100)) * cart_item.quantity
+            subtotal += item_price
+        elif cart_item.product.product_offer:
+            itemprice =  (cart_item.product.price - (cart_item.product.price * cart_item.product.product_offer/100)) * cart_item.quantity
+            subtotal=subtotal+itemprice
+        else:
             itemprice = (cart_item.product.price) * (cart_item.quantity)
             subtotal = subtotal + itemprice
     shipping_cost = 10 
@@ -1184,13 +1503,17 @@ def placeorder(request):
     cart_items = Cart.objects.filter(user=user)
     subtotal = 0
     for cart_item in cart_items:
-        if cart_item.product.price is None:
-            messages.error(request, 'One of the products in the cart does not have a price set.')
-            return redirect('cart')
-        itemprice = cart_item.product.price * cart_item.quantity
-        subtotal += itemprice
+        if cart_item.product.category.category_offer:
+            item_price = (cart_item.product.price - (cart_item.product.price*cart_item.product.category.category_offer/100)) * cart_item.quantity
+            subtotal += item_price
+        elif cart_item.product.product_offer:
+            itemprice =  (cart_item.product.price - (cart_item.product.price * cart_item.product.product_offer/100)) * cart_item.quantity
+            subtotal=subtotal+itemprice
+        else:
+            itemprice = (cart_item.product.price) * (cart_item.quantity)
+            subtotal = subtotal + itemprice
 
-    shipping_cost = 10
+    shipping_cost = 100
     total = subtotal + shipping_cost if subtotal else 0
     discount = request.session.get('discount', 0)
     if discount:
@@ -1234,13 +1557,19 @@ def placeorder(request):
         return redirect('cart')
 #payment
 def proceedtopay(request):
-    print('hjbdshkbskdjg')
+    
     cart = Cart.objects.filter(user=request.user)
     total = 0
     shipping = 10
     subtotal=0
     for cart_item in cart:
-        
+        if cart_item.product.category.category_offer:
+            item_price = (cart_item.product.price - (cart_item.product.price*cart_item.product.category.category_offer/100)) * cart_item.quantity
+            subtotal += item_price
+        elif cart_item.product.product_offer:
+            itemprice =  (cart_item.product.price - (cart_item.product.price * cart_item.product.product_offer/100)) * cart_item.quantity
+            subtotal=subtotal+itemprice
+        else:
             itemprice = (cart_item.product.price) * (cart_item.quantity)
             subtotal = subtotal + itemprice
     for item in cart:
@@ -1256,19 +1585,25 @@ def proceedtopay(request):
 
 
 def razorpay(request,address_id):
-    print("reachedddddddddddddddddddddddddddddddddd")
+    
     user = request.user
     cart_items = Cart.objects.filter(user=user)
     subtotal=0
     for cart_item in cart_items:
-       
+        if cart_item.product.category.category_offer:
+            item_price = (cart_item.product.price - (cart_item.product.price*cart_item.product.category.category_offer/100)) * cart_item.quantity
+            subtotal += item_price
+        elif cart_item.product.product_offer:
+            itemprice =  (cart_item.product.price - (cart_item.product.price * cart_item.product.product_offer/100)) * cart_item.quantity
+            subtotal=subtotal+itemprice
+        else:
             itemprice = (cart_item.product.price) * (cart_item.quantity)
             subtotal = subtotal + itemprice
-    shipping_cost = 10 
+    shipping_cost = 100 
     total = subtotal + shipping_cost if subtotal else 0
     
     discount = request.session.get('discount', 0)
-    
+    discount = request.session.get('discount', 0)
     if discount:
         total -= discount 
 
@@ -1304,6 +1639,7 @@ def success(request):
     }
     return render(request,'main/placeorder.html',context)
 #order
+@login_required(login_url='verified_login')
 def userorder(request):
     
         user = request.user 
@@ -1424,7 +1760,19 @@ def apply_coupon(request):
         total_dict = {}
         coupons = Coupon.objects.all()
         for cart_item in cart_items:
-            
+            if cart_item.quantity > cart_item.product.stock:
+                messages.warning(request, f"{cart_item.product.product_name} is out of stock.")
+                cart_item.quantity = cart_item.product.stock
+                cart_item.save()
+            if cart_item.product.category.category_offer:
+                item_price = (cart_item.product.price - (cart_item.product.price*cart_item.product.category.category_offer/100)) * cart_item.quantity
+                total_dict[cart_item.id] = item_price
+                subtotal += item_price
+            elif cart_item.product.product_offer:
+                item_price = (cart_item.product.price - (cart_item.product.price * cart_item.product.product_offer/100)) * cart_item.quantity
+                total_dict[cart_item.id] = item_price
+                subtotal += item_price
+            else:
                 item_price = cart_item.product.price * cart_item.quantity
                 total_dict[cart_item.id] = item_price
                 subtotal += item_price
@@ -1489,6 +1837,7 @@ def invoice(request, id):
             except Exception as e:
                 return HttpResponse(f'Email sending failed: {str(e)}')
     return HttpResponse('Emails sent successfully!')
+@login_required(login_url='verified_login')
 def contact(request):
     context = {}  
     if request.method=='POST':

@@ -90,20 +90,18 @@
                                     <label>Category_name</label>
                                     <input name="category_name" type="text" class="form-control" value="{{ category.category_name }}"  required>
                                 </div>
-                                <!-- <div class="form-group">
-                                    <label>Description</label>
-                                    <input name="description" type="text" class="form-control"  value= "{{ category.description }}" required>
-                                </div> -->
+                                
 
-                                <!-- <div class="form-group">
+                                <div class="form-group">
                                     <label>Offer Details</label>
-                                    <input name="offer_details" type="text" class="form-control"  value= "{{ category.category_offer_description }}" >
-                                </div> -->
-
-                                <!-- <div class="form-group">
-                                    <label>Offer price</label>
-                                    <input name="offer_price" type="text" class="form-control"  value= "{{ category.category_offer  }}" required>
-                                </div> -->
+                                    <input name="category_offer_description" type="text" class="form-control" value="{{ category.category_offer_description }}">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Offer Percentage</label>
+                                    <input name="category_offer" type="text" class="form-control" value="{{ category.category_offer }}" required>
+                                </div>
+                                
                                 
                                 <!-- <div class="form-group">
                                     <label>Current Image</label>

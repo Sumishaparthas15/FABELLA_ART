@@ -37,7 +37,7 @@ urlpatterns = [
     path('add_product/',views.add_product,name='add_product'),
     path('product/<int:product_id>/edit_product/', views.edit_product, name='edit_product'),
     path('product/<int:product_id>/update_product/',views.update_product,name='update_product'),
-    path('product/<int:product_id>/delete_product/',views.delete_product,name='delete_product'),
+    path('delete_product/<int:product_id>/', views.delete_product, name='delete_product'),
     path('product/<int:product_id>/restore_product/', views.restore_product, name='restore_product'),
 
     path('orders/',views.orders,name='orders'),
@@ -85,6 +85,9 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('profile_update/',  views.profile_update, name='profile_update'),
     path('changepassword/',views.changepassword,name='changepassword'),
+    path('forgotpassword/',views.forgotpassword,name='forgotpassword'),
+    path('reset_password/',views.reset_password,name='reset_password'),
+    
 
     #address
     path('address/', views.address, name='address'),
@@ -137,6 +140,11 @@ urlpatterns = [
 
     path('invoice/<int:id>/',views.invoice,name='invoice'),
     path('contact/',views.contact,name='contact'),
+
+    #salesreprt
+    path('report-pdf-order/', views.report_pdf_order, name='report_pdf_order'),
+    path('chart-demo/', views.chart_demo, name='chart_demo'),
+    path('report_generator/<int:id/',views.report_generator,name='report_generator'),
      
     
     

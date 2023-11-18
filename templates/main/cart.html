@@ -5,9 +5,13 @@
 {% load static %}
 
 <!-- Add your CSS styles or any other HTML content here -->
-
-<script>
-  
+<style>
+    .alert-success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+</style>
 </script>
 <br><br><br><br>
 <div id="messages-container">
@@ -15,8 +19,9 @@
         <ul class="messages text-danger" style="list-style: none;">
             {% for message in messages %}
                 {% if message.tags == 'success' %}
-                    <li class="success">{{ message }}</li>
-
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
                 {% elif message.tags == 'error' %}
                     <li class="error">{{ message }}</li>
 
@@ -55,13 +60,13 @@
                         <td class="align-middle"><img src="{{ cart_item.product.image.url }}" alt="" style="width: 50px;"> {{ cart_item.product.product_name }}</td>
                         <td class="align-middle">
                             {% if cart_item.product.category.category_offer %}
-                        ₹{{ cart_item.product.price }} - {{ cart_item.product.category.category_offer }}%
+                                ₹{{ cart_item.product.price }} - {{ cart_item.product.category.category_offer }}%
 
-                    {% elif cart_item.product.product_offer %}
-                        ₹{{ cart_item.product.price }} 
-                    {% else %}
-                        ₹{{ cart_item.product.price }}
-                    {% endif %}
+                            {% elif cart_item.product.product_offer %}
+                                ₹{{ cart_item.product.price }} 
+                            {% else %}
+                                ₹{{ cart_item.product.price }}
+                            {% endif %}
                         </td>
                         <td>
                             <div class="input-group mb-3" style="max-width: 120px;">

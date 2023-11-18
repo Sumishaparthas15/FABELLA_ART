@@ -19,10 +19,13 @@
     <div class="container">
       <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">
         <div class="col-md-8 col-sm-12 text-center ftco-animate">
-          <span class="subheading">Welcome</span>
+          
+            
+          <p>Welcome, {# {{ user.username }} #}!</p>
+
           <h1 class="mb-4">ART LOVER ?</h1>
-          <p class="mb-4 mb-md-5">You came to the right place !</p>
-           
+          <p class="mb-4 mb-md-5">You came to the right place !
+         Art attracts us only by what it reveals of our most secret self.</p> 
             
         </div>
       </div>
@@ -30,7 +33,7 @@
   </div>
 
 
-  <div class="slider-item" style="background-image: url({% static 'images/BG12.jpeg' %});">
+  <!-- <div class="slider-item" style="background-image: url({% static 'images/BG12.jpeg' %});">
     <div class="overlay"></div>
     <div class="container">
       <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">
@@ -41,13 +44,14 @@
           <p class="mb-4 mb-md-5">I think, if one is a true art lover, he can’t stick to a particular genre. Art knows
             no partitions, no boundaries.</p>
             
+            
         </div>
 
       </div>
     </div>
-  </div>
+  </div> -->
 
-  <div class="slider-item" style="background-image: url({% static 'images/BG11.jpg' %})">
+  <!-- <div class="slider-item" style="background-image: url({% static 'images/BG11.jpg' %})">
     <div class="overlay"></div>
     <div class="container">
       <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">
@@ -61,7 +65,7 @@
 
       </div>
     </div>
-  </div>
+  </div> -->
 </section>
 
 <section class="ftco-intro">
@@ -92,7 +96,7 @@
           </div>
         </div>
       </div>
-      <div class="book p-4">
+      <!-- <div class="book p-4">
         <h3>comment</h3>
         <form action="#" class="appointment-form">
           <div class="d-md-flex">
@@ -114,7 +118,7 @@
           </div>
         </form>
       </div>
-    </div>
+    </div> -->
   </div>
 </section>
 
@@ -139,7 +143,7 @@
 <br><br>
 
 <!-- banner carousel -->
-<div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+<!-- <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
   <div class="carousel-inner">
       {% for bann in banner %}
       <div class="carousel-item {% if forloop.first %}active{% endif %}">
@@ -162,7 +166,7 @@
       <span class="carousel-control-next-icon" aria-hidden="true"></span>
       <span class="sr-only">Next</span>
   </a>
-</div>
+</div> -->
 
 
 

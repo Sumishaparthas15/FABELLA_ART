@@ -17,8 +17,9 @@
                                             <th class="cart-product-name">Product</th>
                                             <th class="product-price">Unit Price</th>
                                         
-                                    
+                                            <th class="product-cart">Add to cart</th>
                                             <th class="product-remove">Remove</th>
+                                            
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -29,6 +30,7 @@
                                               </td>
                                             <td class="product-name"><a href="shop-details.html">{{wishes.product.product_name}}</a></td>
                                             <td class="product-price"><span class="amount">₹ {{wishes.product.price}}</span></td>
+                                            <td class="product-cart"> <a href="{% url 'add_to_cart' wishes.product.id %}" class="btn btn-primary py-3 px-5">Add to cart</a>  </td>
                                             <td class="product-remove"><a href="{% url 'remove_from_wishlist' wishes.product.id %}"><i class="fa fa-times"></i></a></td>
                                         </tr>
                                         {% endfor %}

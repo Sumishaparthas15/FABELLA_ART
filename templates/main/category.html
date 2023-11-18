@@ -133,11 +133,11 @@
                                 <tr class="text-dark">
                                     <th scope="col">id</th>
                                     <th scope="col">Category Name</th>
+                                    <th scope="col">Offer Percentage</th>
+                                    <th scope="col">Category description</th>
+
                                     <th scope ="col">Manage</th>
                             
-                                    <!-- <th scope="col">Images</th>
-                                    <th scope="col">Offer details</th>
-                                    <th scope="col">Offer price</th> -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -145,7 +145,8 @@
                                 <tr>
                                     <td>{{ category.id }}</td>
                                     <td>{{ category.category_name }}</td>
-                    
+                                    <td>{{ category.category_offer }}</td>
+                                    <td>{{ category.category_offer_description }}</td>
 
                                 
                                     <td>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 
 <!doctype html>
@@ -22,23 +22,36 @@
 	</head>
 
 <body>
+    <br><br>
+    <h1>hello</h1>
     <div class="container">
         <h2>Search Results</h2>
         <div class="row">
             {% for product in  search_results %}
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <a class="product-item" href="{% url 'user_product' product.id %}">
-                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.product_name }}"  style="max-width: 200px; max-height: 200px;">
-                            <div class="card-body">
-                                <h5 class="card-title" style="color: black;">{{ product.product_name }}</h5>
-                                    <p class="card-text" style="color: black;">{{ product.description }}</p>
-                                    <p class="card-text" style="color: black;">Price: {{ product.price }}</p>
-                            </div>
-                        </a>
+            <div class="col-md-3">
+                <div class="menu-entry">
+                    <a href="{% url 'product_details' product.id %}">
+                        <img src="/media/{{ product.image}}" style="height: 300px; width: 200px;" alt="{{ product.product_name }}">
+                    </a>
+                    <div class="text text-center pt-4">
+                        <h3><a href="{% url 'product_details' product.id %}">{{ product.product_name }}</a></h3>
+                        <p style="color: white;">{{ product.description }}</p>
+                        {% if product.discounted_price %}
+                        <strong class="text-dark ml-2"><del>₹{{ product.price }}</del></strong>
+                            <h6 class="text-success">₹{{ product.discounted_price }}</h6>
+                        
+                        {% elif product.offer_price %}
+                            <strong class="text-dark ml-2"><del>₹{{ product.price }}</del></strong>
+                            <h6 class="text-success">₹{{ product.offer_price }}</h6>
+                            
+                        {% else %}
+                        <p><strong>Price: {{product.price}}</strong></p>
+                        {% endif %}
+                        <p><a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-outline-primary">Add to Cart</a></p>
                     </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
     </div>
-    {% endblock content %}
+{% endblock %}    
