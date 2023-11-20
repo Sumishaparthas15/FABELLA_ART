@@ -43,6 +43,8 @@ urlpatterns = [
     path('orders/',views.orders,name='orders'),
     path('update_order_status/', views.update_order_status, name='update_order_status'),
     path('search-customer/', views.search_customer, name='search_customer'),
+   
+
     
 
     path('banner/', BannerView.as_view(), name='banner'),

@@ -59,6 +59,7 @@ from decimal import Decimal
 from datetime import datetime
 import json
 import matplotlib.pyplot as plt
+from django.http import HttpResponseBadRequest
 
 # ADMIN LOGIN
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
@@ -112,7 +113,7 @@ def dashboard(request):
         }
         return render(request, 'main/dashboard.html', context)
     else:
-        return redirect('admin')
+        return redirect('admin_login')
 # CUSTOMER
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache
@@ -155,7 +156,7 @@ def category(request):
         }
         return render(request, 'main/category.html', context)
     else:
-        return redirect('admin')
+        return redirect('admin_login')
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
@@ -181,7 +182,7 @@ def add_category(request):
         return render(request, 'main/addcategory.html')
     
     else:
-        return redirect('admin')
+        return redirect('admin_login')
 
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache  
@@ -217,7 +218,7 @@ def edit_category(request, category_id):
         context = {'category': category}
         return render(request,'main/editcategory.html', context)
     else:
-        return redirect ('admin')
+        return redirect ('admin_login')
 def delete_category(request,category_id):
     try:
         category = Category.objects.get(id=category_id)
@@ -256,7 +257,7 @@ def sub_category(request):
 
         return render(request,'main/subcategory.html',context)
     else:
-        return redirect('admin')
+        return redirect('admin_login')
 def add_sub_category(request):
     main_category=Category.objects.all()
     context={
@@ -277,7 +278,7 @@ def add_sub_category(request):
             return redirect('sub_category')  
         return render(request,'main/addsubcategory.html',context)
     else:
-        return redirect ('admin')
+        return redirect ('admin_login')
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache  
 def edit_sub_category(request, sub_category_id):
@@ -292,7 +293,7 @@ def edit_sub_category(request, sub_category_id):
         }
         return render(request, 'main/editsubcategory.html', context)
     else:
-        return redirect ('admin')   
+        return redirect ('admin_login')   
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def update_sub_category(request, sub_category_id):
@@ -341,7 +342,7 @@ def product(request):
         }
         return render(request, 'main/product.html', context)
     else:
-        return redirect('admin')
+        return redirect('admin_login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def add_product(request):
@@ -383,7 +384,7 @@ def add_product(request):
         context = {'categories': categories}
         return render(request, 'main/addproduct.html', context)
     else:
-        return redirect('admin')
+        return redirect('admin_login')
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache  
 def edit_product(request, product_id):
@@ -402,7 +403,7 @@ def edit_product(request, product_id):
 
         return render(request, 'main/editproduct.html', context)
     else:
-        return redirect('admin')
+        return redirect('admin_login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def update_product(request, product_id):
@@ -485,14 +486,32 @@ def update_order_status(request):
         
         try:
             order = Order.objects.get(id=order_id)
+            previous_status = order.status  # Store the previous status for comparison
             order.status = new_status
             order.save()
-            
-            messages.success(request, f"Order #{order.id} status has been updated to {new_status}.")
+
+            # Check if the order is being cancelled
+            if new_status == 'cancelled' and previous_status != 'cancelled':
+                # Attempt to credit the amount back to the user's wallet
+                try:
+                    wallet = Wallet.objects.create(
+                        user=order.user,
+                        order=order,
+                        amount=order.amount,
+                        is_credit=True,  # Credit the wallet
+                        status='refund'  # You can set a status for the wallet transaction
+                    )
+                    messages.success(request, f"Order #{order.id} cancelled and amount credited to the wallet.")
+                except Exception as e:
+                    messages.error(request, f"Error creating wallet transaction: {e}")
+            else:
+                messages.success(request, f"Order #{order.id} status has been updated to {new_status}.")
+                
         except Order.DoesNotExist:
             messages.error(request, f"Order with ID {order_id} does not exist.")
         
-    return redirect('orders')  
+    return redirect('orders')
+
 
 def search_customer(request):
     q = request.GET.get('q', '')  # Get the 'q' parameter from the request or set it to an empty string
@@ -513,7 +532,7 @@ def coupon(request):
         context = {'coupons': coupons}
         return render(request,'main/coupon.html', context)
     else:
-        return redirect('admin')
+        return redirect('admin_login')
 
 def addcoupon(request):
     if request.method == 'POST':
@@ -538,7 +557,7 @@ def editcoupon(request,coupon_id):
         context = {'coupon': coupon}
         return render(request, 'main/edit_coupon.html', context)
     else:
-        return redirect ('admin')
+        return redirect ('admin_login')
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
@@ -583,7 +602,7 @@ class BannerView(View):
             context = {'banner': banners}
             return render(request, self.template_name, context)
         else:
-            return redirect('admin')
+            return redirect('admin_login')
 
 class AddBannerView(View):
     template_name = 'main/add_banner.html'
@@ -592,7 +611,7 @@ class AddBannerView(View):
         if 'admin' in request.session:
             return render(request, self.template_name)
         else:
-            return redirect('admin')
+            return redirect('admin_login')
 
     def post(self, request, *args, **kwargs):
         if 'admin' in request.session:
@@ -603,7 +622,7 @@ class AddBannerView(View):
             else:
                 return render(request, self.template_name, {'form': form})
         else:
-            return redirect('admin')
+            return redirect('admin_login')
 
 class EditBannerView(View):
     template_name = 'main/edit_banner.html'
@@ -617,7 +636,7 @@ class EditBannerView(View):
             context = {'banner': banner}
             return render(request, self.template_name, context)
         else:
-            return redirect('admin')
+            return redirect('admin_login')
 
    
 
@@ -762,8 +781,6 @@ def chart_demo(request):
         'data': json.dumps(data),
     }
     return render(request, 'main/chart_demo.html', context)
-
-
 
 
 
@@ -1393,31 +1410,36 @@ def cart(request):
 @never_cache
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @login_required(login_url='verified_login')
+
 def add_to_cart(request, product_id):
-    try: 
+    try:
         product = Product.objects.get(id=product_id)
     except Product.DoesNotExist:
         return redirect('product_not_found')
 
     quantity = request.POST.get('quantity', 1)
-    if not quantity:
-        quantity = 1
-    else:
+
+    # Check if the product is in stock
+    if product.stock >= int(quantity) > 0:
+        # Proceed with adding the product to the cart
         cart_item, created = Cart.objects.get_or_create(user=request.user, product=product)
 
-    if created:
-        cart_item.quantity = int(quantity)
-    else:
-        cart_item.quantity += int(quantity)
+        if created:
+            cart_item.quantity = int(quantity)
+        else:
+            cart_item.quantity += int(quantity)
 
-    cart_item.save()
-    return redirect('cart')
+        cart_item.save()
+        return redirect('cart')
+    else:
+        # Product is out of stock, render the out_of_stock template
+        
+        return render(request, 'main/out_of_stock.html', {'product': product})
 
 
 def update_cart(request, product_id):
     cart_item = None
     cart_item = get_object_or_404(Cart, product_id=product_id, user=request.user)
-    print(cart_item,"....................")
     try:
         data = json.loads(request.body)
         quantity = int(data.get('quantity'))
@@ -1428,6 +1450,7 @@ def update_cart(request, product_id):
     cart_item.quantity = quantity
     cart_item.save()
     return JsonResponse({'message': 'Cart item updated.'}, status=200)
+
 
 @never_cache
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
@@ -1740,7 +1763,9 @@ def wallet(request):
     user = request.user
     customer = Profile.objects.get(email=user)
     print(customer)
-    wallet_transactions = Wallet.objects.filter(user=customer).order_by('-created_at')
+    # In the wallet view
+    wallet_transactions = Wallet.objects.filter(user=customer, order__isnull=False).order_by('-created_at')
+
     
     
     context = {

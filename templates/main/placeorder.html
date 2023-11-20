@@ -58,10 +58,15 @@
             <div class="alert alert-success mt-5">
                 <h2 style ="color:black">Order Placed Successfully!</h2>
                 <p style ="color:black">Your order has been received and will be processed shortly. Thank you for shopping with us!</p>
-                <p><a href="{% url 'userorder' %}"> View My Orders</a></p>
-                {% for i in orders %}
-                <a href="{% url 'invoice' i.id %}" class="btn btn-sm btn-outline-black"><button>Sent Invoice</button></a>
-                {% endfor %}
+                <!-- View My Orders link -->
+                <div style="display: flex; justify-content: center;">
+                    <p style="margin-right: 1cm;"><a href="{% url 'userorder' %}">View My Orders</a></p>
+                    {% for i in orders %}
+                        <p><a href="{% url 'invoice' i.id %}">Sent Invoice</a></p>
+                    {% endfor %}
+                </div>
+                
+                
             </div>
         </div>
     </div>

@@ -117,17 +117,19 @@
                         <th>Price</th>
                         <!-- <th>Discount</th> -->
                         <th>Payment type</th>
-                        <th>Total</th>
+                        <th>Discount(percentage)</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for item in order.orderitem_set.all %}
                     <tr>
                         <td>{{ item.product.product_name }}</td>
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.product.price }}</td>
                         <td>{{ order.payment_type }}</td>
-                        <td>{{ order.amount }}</td>
+                        <td>{{ item.product.category.category_offer  }}</td>
                     </tr>
+                {% endfor %}
                 </tbody>
             </table>
             <div class="invoice-total">
