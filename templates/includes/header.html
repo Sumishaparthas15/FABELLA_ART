@@ -15,7 +15,9 @@
             <a class="nav-link dropdown-toggle" href=" " id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Category</a>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
               {% for category in links %}
+              {% if not category.is_deleted %}
                   <a class="dropdown-item" href="{{category.get_url}}">{{ category.category_name }}</a>
+              {% endif %}    
               {% endfor %}
           </div>
           
@@ -34,9 +36,11 @@
           </div>
         </li>
           <li class="nav-item"><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
-
+          <li class="nav-item cart"><a href="{% url 'cart' %}" class="nav-link"><span class="icon icon-shopping_cart"></span></a></li>
           <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="room.html" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
+            <a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="fa fa-user"></span>
+            </a>
           <div class="dropdown-menu" aria-labelledby="dropdown04">
               <a class="dropdown-item" href="{% url 'userlogin' %}" class="nav-link">Login</a>
               <a class="dropdown-item" href="{% url 'profile' %}" class="nav-link"> My Profile</a>
@@ -46,7 +50,7 @@
           </div>
         </li>
           <!-- <li class="nav-item search"><a href="#" class="nav-link"><span class="icon icon-search"></span></a></li> -->
-          <li class="nav-item cart"><a href="{% url 'cart' %}" class="nav-link"><span class="icon icon-shopping_cart"></span></a></li>
+         
           
         
         </ul>

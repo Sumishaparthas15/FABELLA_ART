@@ -219,17 +219,55 @@ def edit_category(request, category_id):
         return render(request,'main/editcategory.html', context)
     else:
         return redirect ('admin_login')
-def delete_category(request,category_id):
+# def delete_category(request,category_id):
+#     try:
+#         category = Category.objects.get(id=category_id)
+#     except Category.DoesNotExist:
+#         return render(request, 'category_not_found.html')
+
+#     category.delete()
+#     categories = Category.objects.all()
+#     context = {'categories': categories}
+    
+#     return render(request, 'main/category.html', context)
+# @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+# @never_cache
+# def delete_category(request, category_id):
+#     if 'admin' in request.session:
+#         # Get the category or render 'category_not_found.html'
+#         category = get_object_or_404(Category, id=category_id)
+
+#         # Soft delete by setting is_deleted to True
+#         category.is_deleted = True
+#         category.save()
+
+#         # Retrieve non-deleted categories for the context
+#         categories = Category.objects.filter(is_deleted=False)
+#         context = {'categories': categories}
+
+#         return render(request, 'main/category.html', context)  # Replace 'your_template.html' with your actual template
+
+#     else:
+#         return redirect('admin_login')
+def delete_category(request, category_id):
     try:
         category = Category.objects.get(id=category_id)
-    except Category.DoesNotExist:
+        category.is_deleted = True  # Use the correct field name for soft delete
+        category.save()
+    except Category.DoesNotExist:  # Fix the case of Category.DoesNotExist
         return render(request, 'category_not_found.html')
 
-    category.delete()
-    categories = Category.objects.all()
-    context = {'categories': categories}
-    
-    return render(request, 'main/category.html', context)
+    return redirect('category')
+
+def restore_category(request, category_id):
+    try:
+        category = Category.objects.get(id=category_id)
+        category.is_deleted = False  # Use the correct field name for soft delete
+        category.save()
+    except Category.DoesNotExist:  # Fix the case of Category.DoesNotExist
+        pass
+
+    return redirect('category')
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache  
 def sub_category(request):
@@ -304,7 +342,6 @@ def update_sub_category(request, sub_category_id):
         new_name = request.POST.get('sub_category_name')
         new_main_id = request.POST.get('main_category')
         sub_category.sub_category_name = new_name
-        # sub_category.main_category_id = new_main_id
         sub_category.save()
 
         return redirect('sub_category')
@@ -355,7 +392,7 @@ def add_product(request):
             subcategory_id = request.POST.get('subcategory_id')
             stock = request.POST.get('stock')
             price = request.POST.get('price')
-            images = request.FILES.get('images')  # Get all uploaded images
+            images = request.FILES.get('images')  
             product_offer = request.POST.get('product_offer')
             
 
@@ -373,7 +410,7 @@ def add_product(request):
                 stock=stock,
                 price=price,
                 product_offer=product_offer,
-                image = images  # Add size
+                image = images  
             )
 
           
@@ -443,63 +480,65 @@ def update_product(request, product_id):
         }
         return render(request, 'main/product.html', context)
 
+# def delete_product(request, product_id):
+#     try:
+#         product = get_object_or_404(Product, id=product_id, deleted=False)
+#     except Product.DoesNotExist:
+#         return render(request, 'product_not_found.html')
+#     if product.deleted:
+#         return render(request, 'product_already_deleted.html', {'product': product})
+
+#     product.deleted = True
+#     product.save()
+#     return redirect('product')
 def delete_product(request, product_id):
     try:
-        # Retrieve the product or return a 404 response if it doesn't exist
-        product = get_object_or_404(Product, id=product_id, deleted=False)
+        product = Product.objects.get(id=product_id)
+        product.deleted = True
+        product.save()
     except Product.DoesNotExist:
-        return render(request, 'product_not_found.html')
+         return render(request, 'product_not_found.html')
 
-    # Check if the product is already deleted
-    if product.deleted:
-        return render(request, 'product_already_deleted.html', {'product': product})
+    return redirect('product')
 
-    # Set the 'deleted' flag to True
-    product.deleted = True
-    product.save()
-
-    # Redirect to the product list or any other desired page
+def restore_product(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        product.deleted = False  
+        product.save()
+    except Product.DoesNotExist:
+        pass
     return redirect('product')
 #ORDERS 
 def orders(request):
     if 'admin' in request.session:
         orders = Order.objects.all().order_by('-id')
-
-
-        
-        print(orders)
-
         context = {
             'orders': orders,
         }
 
         return render(request, 'main/adminorder.html', context)
     else:
-        # Handle the case where "admin" is not in the session (e.g., redirect or display an error message)
-        # For example, you can redirect to a login page or display an error message.
+        
         return render(request, 'main/admin_order_not_authorized.html')
 def update_order_status(request):
     if request.method == "POST":
-        print(request.POST)  # Debug: Print the POST data to the console
+        print(request.POST)  
         order_id = request.POST.get('order_id')
         new_status = request.POST.get('status')
-        
         try:
             order = Order.objects.get(id=order_id)
-            previous_status = order.status  # Store the previous status for comparison
+            previous_status = order.status  
             order.status = new_status
             order.save()
-
-            # Check if the order is being cancelled
             if new_status == 'cancelled' and previous_status != 'cancelled':
-                # Attempt to credit the amount back to the user's wallet
                 try:
                     wallet = Wallet.objects.create(
                         user=order.user,
                         order=order,
                         amount=order.amount,
-                        is_credit=True,  # Credit the wallet
-                        status='refund'  # You can set a status for the wallet transaction
+                        is_credit=True,  
+                        status='refund' 
                     )
                     messages.success(request, f"Order #{order.id} cancelled and amount credited to the wallet.")
                 except Exception as e:
@@ -514,9 +553,7 @@ def update_order_status(request):
 
 
 def search_customer(request):
-    q = request.GET.get('q', '')  # Get the 'q' parameter from the request or set it to an empty string
-
-    # Filter customers based on the query 'q'
+    q = request.GET.get('q', '')  
     customers = Profile.objects.filter(username__icontains=q) 
 
     context = {
@@ -524,6 +561,20 @@ def search_customer(request):
     }
 
     return render(request, 'main/customer.html', context)
+def search_sub_category(request):
+    q = request.GET.get('q', '')  
+    print(f"Search query: {q}")  # Check if the search query is received
+
+    sub_category = Sub_category.objects.filter(sub_category_name__icontains=q)
+    print(f"Subcategories: {sub_category}")  # Check if the correct subcategories are retrieved
+
+    context = {
+        'sub_category': sub_category
+    }
+
+    return render(request, 'main/subcategory.html', context)
+
+
 @never_cache
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 def coupon(request):
@@ -562,21 +613,19 @@ def editcoupon(request,coupon_id):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def update_coupon(request, id):
-    # Use get_object_or_404 to retrieve the coupon or return a 404 page if it doesn't exist
     coupon = get_object_or_404(Coupon, id=id)
     if request.method == 'POST':
         code = request.POST.get('Couponcode')
         discount = request.POST.get('price')
         minimum_amount = request.POST.get('amount')
         expiration_date = request.POST.get('date')
-        # Check if coupon_code and discount_price are not null before updating
         if code:
             coupon.code = code
         if discount:
             coupon.discount = discount
         coupon.minimum_amount = minimum_amount
         coupon.expiration_date = expiration_date
-        coupon.save()  # Save the updated coupon object here
+        coupon.save()  
         return redirect('coupon')
     context = {'coupon': coupon}
     return render(request, 'main/edit_coupon.html', context)
@@ -661,30 +710,14 @@ class DeleteBannerView(View):
         except Banner.DoesNotExist:
             return render(request, 'category_not_found.html')
         return redirect('banner')
-def delete_product(request, product_id):
-    try:
-        product = Product.objects.get(id=product_id)
-        product.deleted = True
-        product.save()
-    except Product.DoesNotExist:
-         return render(request, 'product_not_found.html')
 
-    return redirect('product')
-
-def restore_product(request, product_id):
-    try:
-        product = Product.objects.get(id=product_id)
-        product.deleted = False  
-        product.save()
-    except Product.DoesNotExist:
-        pass
-    return redirect('product')
 def adminside_message(request):
     customer_messages=Contact.objects.all()
     context={
         'customer_messages':customer_messages
     }
     return render(request,'main/adminside_message.html',context)
+
 # Create bar chart function
 def create_bar_chart(labels, data, title):
     plt.figure(figsize=(8, 6))

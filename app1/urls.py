@@ -39,10 +39,12 @@ urlpatterns = [
     path('product/<int:product_id>/update_product/',views.update_product,name='update_product'),
     path('delete_product/<int:product_id>/', views.delete_product, name='delete_product'),
     path('product/<int:product_id>/restore_product/', views.restore_product, name='restore_product'),
+    path('restore_category/<int:category_id>/', views.restore_category, name='restore_category'),
 
     path('orders/',views.orders,name='orders'),
     path('update_order_status/', views.update_order_status, name='update_order_status'),
     path('search-customer/', views.search_customer, name='search_customer'),
+    path('search_sub_category/', views.search_sub_category, name='search_sub_category'),
    
 
     

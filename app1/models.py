@@ -53,7 +53,8 @@ class Category(models.Model):
     category_name=models.CharField(max_length=100)
     category_offer_description = models.CharField(max_length=100, null=True, blank=True)
     category_offer = models.PositiveBigIntegerField(default=0)
-
+    is_deleted = models.BooleanField(default=False)  # New field
+    
     def get_url(self):
         return reverse('products_by_category', args=[str(self.id)])
    

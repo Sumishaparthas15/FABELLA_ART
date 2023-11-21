@@ -149,10 +149,26 @@
                                     <td>{{ category.category_offer_description }}</td>
 
                                 
-                                    <td>
+                                    <!-- <td>
                                         <a href="{% url 'edit_category' category_id=category.id %}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
                                         <a href="#" class="delete" data-toggle="modal" data-target="#deleteModal{{ category.id }}"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+                                    </td> -->
+                                    <td>
+                                        <a href="{% url 'edit_category' category_id=category.id %}" class="edit" data-toggle="modal">
+                                            <i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i>
+                                        </a>
+                                        
+                                        {% if not category.is_deleted %}
+                                        <a href="" class="delete" data-toggle="modal" data-target="#deleteModal{{ category.id }}">
+                                            <i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i>
+                                        </a>
+                                        {% else %}
+                                        <a href="{% url 'restore_category' category_id=category.id %}" class="restore" data-toggle="tooltip" title="Restore">
+                                            <i class="material-icons" title="Restore">restore</i>
+                                        </a><br><span style="color:red;" class="soft-deleted-label">Soft Deleted</span>
+                                        {% endif %}
                                     </td>
+                                    
                                 </tr>
                                 {% endfor %}
                             </tbody>

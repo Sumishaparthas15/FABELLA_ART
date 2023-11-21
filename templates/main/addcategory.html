@@ -101,18 +101,23 @@
                                
                             </div>
                             <div class="modal-body">
-                                <!-- <div class="form-group">
+                                 <!-- <div class="form-group">
                                     <label>Category id</label>
                                     <input name="category_id" type="text" class="form-control" required maxlength="100">
-                                </div>					 -->
+                                </div>					  -->
                                 <div class="form-group">
                                     <label>Category Name</label>
                                     <input name="category_name" type="text" class="form-control" required maxlength="100">
                                 </div>
-                                <!-- <div class="form-group">
-                                    <label>Description</label>
-                                    <input name="description" type="text" class="form-control" required maxlength="100">
-                                </div> -->
+                                <div class="form-group">
+                                    <label>Offer Details</label>
+                                    <input name="category_offer_description" type="text" class="form-control" value="{{ category.category_offer_description }}">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Offer Percentage</label>
+                                    <input name="category_offer" type="text" class="form-control" value="{{ category.category_offer }}" required>
+                                </div>
                                 
 <!-- 
                                 <div class="form-group">

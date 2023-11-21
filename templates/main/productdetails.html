@@ -55,10 +55,12 @@
             </div>
             <p>Availability:{{product.stock}}</p>
             <!-- <button id="add-to-cart-btn" class="btn btn-primary py-3 px-5" data-product-id="{{ product.id }}">Add to Cart</button> -->
-                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary py-3 px-5">Add to cart</a>
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary addToCartBtn py-3 px-5" data-product-id="{{ product.id }}">Add to cart</a>
                     <a href="{% url 'add_to_wishlist' product.id %}" class="btn btn-primary py-3 px-5">Add to Wishlist</a>
+                    <div id="success-message" style="display: none; color: green;"></div>   
                 </div>
             </div>
+            
         </div>
     </div>
 </div>
@@ -74,5 +76,39 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+ <script>
+     function showSuccessMessage(message) {
+        var successMessage = $("#success-message");
+        successMessage.text(message);
+        successMessage.show();
+        setTimeout(function () {
+            successMessage.hide();
+        }, 3000);
+    }
+    $(".addToCartBtn").on("click", function (e) {
+        e.preventDefault(); 
+        var product_id = $(this).data("product-id");
+
+        $.ajax({
+            url: "{% url 'add_to_cart' 0 %}".replace("0", product_id),
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                if (data.success) {
+    
+                    $("#cart-count").text(data.cart_items_count);
+                    showSuccessMessage("Product added to the cart successfully");
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    });
+    
+
+</script>
 
 {% endblock %}

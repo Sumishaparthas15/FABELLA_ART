@@ -129,6 +129,7 @@
                                         <th scope="col">Amount</th>
                                         <th scope="col">Payment type</th>
                                         <th scope="col">Status</th>
+                                        <th scope="col">Address</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -176,6 +177,7 @@
                                                 <button style="color: green;" type="submit">Update</button>
                                             </form>
                                         </td>
+                                        <td>{{ order.address.address1 }}</td>
                                     </tr> 
                                     {% endfor %}
                                 </tbody>
