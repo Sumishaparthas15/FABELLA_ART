@@ -1450,6 +1450,8 @@ def cart(request):
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @login_required(login_url='verified_login')
 
+
+
 def add_to_cart(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
@@ -1469,12 +1471,16 @@ def add_to_cart(request, product_id):
             cart_item.quantity += int(quantity)
 
         cart_item.save()
+
+        # Remove the item from the wishlist
+        if request.user.is_authenticated:
+            wish = get_object_or_404(WishList, product=product, user=request.user)
+            wish.delete()
+
         return redirect('cart')
     else:
         # Product is out of stock, render the out_of_stock template
-        
         return render(request, 'main/out_of_stock.html', {'product': product})
-
 
 def update_cart(request, product_id):
     cart_item = None
