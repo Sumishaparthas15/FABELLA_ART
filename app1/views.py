@@ -118,18 +118,29 @@ def dashboard(request):
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
 @never_cache
 def customer(request):
+    # Check if 'admin' is in the request session
+    if 'admin' not in request.session:
+        # If 'admin' is not in the session, redirect to the admin login page
+        return redirect('admin_login')  # Change 'admin_login' to the actual URL name of your admin login page
+
+    # Retrieve all customer profiles
     customer_list = Profile.objects.all()
-    print(customer_list)
-    paginator = Paginator(customer_list, 500)  # Show 10 customers per page
+
+    # Paginate the customer list
+    paginator = Paginator(customer_list, 10)  # Show 10 customers per page
     page = request.GET.get('page')
+
     try:
         customers = paginator.page(page)
     except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
         customers = paginator.page(1)
     except EmptyPage:
+        # If page is out of range (e.g., 9999), deliver last page of results.
         customers = paginator.page(paginator.num_pages)
 
     return render(request, 'main/customer.html', {'customers': customers})
+
 def block_customer(request, customer_id):
     customer = get_object_or_404(Profile, id=customer_id)
     customer.is_active = False
@@ -219,36 +230,7 @@ def edit_category(request, category_id):
         return render(request,'main/editcategory.html', context)
     else:
         return redirect ('admin_login')
-# def delete_category(request,category_id):
-#     try:
-#         category = Category.objects.get(id=category_id)
-#     except Category.DoesNotExist:
-#         return render(request, 'category_not_found.html')
 
-#     category.delete()
-#     categories = Category.objects.all()
-#     context = {'categories': categories}
-    
-#     return render(request, 'main/category.html', context)
-# @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-# @never_cache
-# def delete_category(request, category_id):
-#     if 'admin' in request.session:
-#         # Get the category or render 'category_not_found.html'
-#         category = get_object_or_404(Category, id=category_id)
-
-#         # Soft delete by setting is_deleted to True
-#         category.is_deleted = True
-#         category.save()
-
-#         # Retrieve non-deleted categories for the context
-#         categories = Category.objects.filter(is_deleted=False)
-#         context = {'categories': categories}
-
-#         return render(request, 'main/category.html', context)  # Replace 'your_template.html' with your actual template
-
-#     else:
-#         return redirect('admin_login')
 def delete_category(request, category_id):
     try:
         category = Category.objects.get(id=category_id)
@@ -303,18 +285,23 @@ def add_sub_category(request):
     }
        
     if 'admin' in request.session: 
-        if request.method  == 'POST':
-            cat      = request.POST.get('categories')
-            print(cat)
-            sub_category_name   =request.POST.get('name')
+        if request.method == 'POST':
+            cat = request.POST.get('categories')
+            print("Selected category ID:", cat)
+            sub_category_name = request.POST.get('name')
+            print("New subcategory name:", sub_category_name)
             main = Category.objects.get(id=cat)
 
-            
-            sub = Sub_category.objects.create(main_category=main,sub_category_name=sub_category_name)
+            # Print existing subcategories for debugging
+            existing_subcategories = Sub_category.objects.filter(main_category=main)
+            print("Existing subcategories:", existing_subcategories)
+
+            sub = Sub_category.objects.create(main_category=main, sub_category_name=sub_category_name)
             sub.save() 
 
             return redirect('sub_category')  
-        return render(request,'main/addsubcategory.html',context)
+        return render(request, 'main/addsubcategory.html', context)
+
     else:
         return redirect ('admin_login')
 @cache_control(no_cache=True,must_revalidate=True,no_store=True)
@@ -394,7 +381,6 @@ def add_product(request):
             price = request.POST.get('price')
             images = request.FILES.get('images')  
             product_offer = request.POST.get('product_offer')
-            
 
             try:
                 subcategory_id = Sub_category.objects.get(id=subcategory_id)
@@ -402,6 +388,12 @@ def add_product(request):
             except Sub_category.DoesNotExist:
                 return HttpResponse("Sub Category not found")
 
+            # Check if a product with the same name already exists
+            if Product.objects.filter(product_name=product_name).exists():
+                messages.error(request, f"A product with the name '{product_name}' already exists.", extra_tags='custom-error')
+                return redirect('add_product')
+
+            # If the product name is unique, proceed with creating the product
             product = Product.objects.create(
                 product_name=product_name,
                 description=description,
@@ -410,12 +402,12 @@ def add_product(request):
                 stock=stock,
                 price=price,
                 product_offer=product_offer,
-                image = images  
+                image=images  
             )
 
-          
             for image in request.FILES.getlist('images'):
-                    Images.objects.create(product=product, images=image)
+                Images.objects.create(product=product, images=image)
+
             return redirect('product')
 
         context = {'categories': categories}
@@ -520,7 +512,7 @@ def orders(request):
         return render(request, 'main/adminorder.html', context)
     else:
         
-        return render(request, 'main/admin_order_not_authorized.html')
+        return redirect ('admin_login')
 def update_order_status(request):
     if request.method == "POST":
         print(request.POST)  
@@ -711,12 +703,26 @@ class DeleteBannerView(View):
             return render(request, 'category_not_found.html')
         return redirect('banner')
 
+from django.shortcuts import render, redirect
+from .models import Contact
+
 def adminside_message(request):
-    customer_messages=Contact.objects.all()
-    context={
-        'customer_messages':customer_messages
+    # Check if 'admin' is in the request session
+    if 'admin' not in request.session:
+        # If 'admin' is not in the session, redirect to the admin login page
+        return redirect('admin_login')  # Change 'admin_login' to the actual URL namfe of your admin login page
+
+    # Retrieve all customer messages
+    customer_messages = Contact.objects.all()
+
+    # Provide the messages to the template in the context
+    context = {
+        'customer_messages': customer_messages
     }
-    return render(request,'main/adminside_message.html',context)
+
+    # Render the adminside_message template
+    return render(request, 'main/adminside_message.html', context)
+
 
 # Create bar chart function
 def create_bar_chart(labels, data, title):
@@ -1453,7 +1459,7 @@ def add_to_cart(request, product_id):
     quantity = request.POST.get('quantity', 1)
 
     # Check if the product is in stock
-    if product.stock >= int(quantity) > 0:
+    if product.stock >= int(quantity) >= 0:
         # Proceed with adding the product to the cart
         cart_item, created = Cart.objects.get_or_create(user=request.user, product=product)
 
@@ -1903,17 +1909,30 @@ def invoice(request, id):
             except Exception as e:
                 return HttpResponse(f'Email sending failed: {str(e)}')
     return HttpResponse('Emails sent successfully!')
+def download_invoice_view(request, order_id):
+    # Retrieve order details and generate the invoice HTML
+    order = Order.objects.get(id=order_id)
+    # ... (additional logic to retrieve order details) ...
+
+    rendered = render_to_string('main/invoice.html', {'order': order})
+
+    # Convert HTML to PDF
+    pdf_data = io.BytesIO()
+    pdf = pisa.CreatePDF(rendered, pdf_data)
+
+    # Set response headers for PDF download
+    response = HttpResponse(pdf_data.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=invoice_{order_id}.pdf'
+    return response
 @login_required(login_url='verified_login')
 def contact(request):
     context = {}  
     if request.method=='POST':
         user=request.user
         message = request.POST.get('message')
-        
-        # Save the message to the database
         contact = Contact(user=user,message=message)
         contact.save()
-        messages.success(request,'Thank you for contacting us!')
+        
 
         return redirect('contact') 
     return render(request,'main/contact.html',context)

@@ -25,17 +25,17 @@
     <br><br>
     <h1>hello</h1>
     <div class="container">
-        <h2>Search Results</h2>
+        <h2 style ="color:black;">Search Results</h2>
         <div class="row">
             {% for product in  search_results %}
             <div class="col-md-3">
                 <div class="menu-entry">
                     <a href="{% url 'product_details' product.id %}">
-                        <img src="/media/{{ product.image}}" style="height: 300px; width: 200px;" alt="{{ product.product_name }}">
+                        <img src="/media/{{ product.image}}" style="height: 300px; width: 200px; " alt="{{ product.product_name }}">
                     </a>
                     <div class="text text-center pt-4">
-                        <h3><a href="{% url 'product_details' product.id %}">{{ product.product_name }}</a></h3>
-                        <p style="color: white;">{{ product.description }}</p>
+                        <h3><a href="{% url 'product_details' product.id %}" style="color: black;">{{ product.product_name }}</a></h3>
+                        <p style="color: black;">{{ product.description }}</p>
                         {% if product.discounted_price %}
                         <strong class="text-dark ml-2"><del>₹{{ product.price }}</del></strong>
                             <h6 class="text-success">₹{{ product.discounted_price }}</h6>

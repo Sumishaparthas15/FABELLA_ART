@@ -68,45 +68,48 @@
                     J T mandroke,california,America 560067<br>
                 </div>
             </div>
-                <table border="1" cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse;">
+
+   
+
+                 <table border="1" cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse;">
                     <colgroup>
                     <col span="1" style="width: 30%;">
                     <col span="1" style="width: 70%;">
                     </colgroup>
                     <tr>
-                        <td><strong>Name</strong></td>
-                        <td>{{address.firstname}}</td>
+                        <td><strong>Name :</strong> {{ order.user.username }}</td>
+                        
                     </tr>
                     
                     <tr>
-                        <td><strong>House No. & Street</strong></td>
-                        <td>{{address.address1}} </td>
+                        <td><strong>Address :</strong>  {{ order.address.address1 }} </td>
+                        
                     </tr>
                 
                     <tr>
-                        <td><strong>City & Postal Code</strong></td>
-                        <td>{{address.city}}, {{address.zip}}</td>
+                        <td><strong>City & Postal Code :</strong>  {{ order.address.city }},{{ order.address.zip }}</td>
+                        
                     </tr>
                     
                     <tr>
-                        <td><strong>State</strong></td>
-                        <td>{{address.state}}</td>
+                        <td><strong>State :</strong> {{ order.address.state }},</td>
+                        
                     </tr>
 
                     <tr>
-                        <td><strong>Phone No.</strong></td>
-                        <td>{{address.number}}</td>
+                        <td><strong>Phone No :</strong> {{ order.address.number}}</td>
+                        
                     </tr>
                     <tr>
-                        <td><strong>Order Date.</strong></td>
-                        <td>{{order.date}}</td>
+                        <td><strong>Order Date :</strong>{{order.date}}</td>
+                        
                     </tr>
                     <tr>
-                        <td><strong>Order Status.</strong></td>
-                        <td>{{order.status}}</td>
+                        <td><strong>Order Status :</strong>{{order.status}}</td>
+                        
                     </tr>
                    
-                </table>
+                </table> 
 
 
             <table>
@@ -115,13 +118,12 @@
                         <th>Product</th>
                         <th>Quantity</th>
                         <th>Price</th>
-                        <!-- <th>Discount</th> -->
                         <th>Payment type</th>
                         <th>Discount(percentage)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in order.orderitem_set.all %}
+                 {% for item in order.orderitem_set.all %}
                     <tr>
                         <td>{{ item.product.product_name }}</td>
                         <td>{{ item.quantity }}</td>

@@ -37,7 +37,7 @@
         <div class="col-md-6">
             <div class="row">
                 <div class="col-lg-12 product-details pl-md-5 ftco-animate">
-                    <h2>{{product.product_name}}</h2>
+                    <h2 style="color: black;">{{product.product_name}}</h2>
             <p>{{product.description}}</p>
             
             <div>
@@ -57,7 +57,7 @@
             <!-- <button id="add-to-cart-btn" class="btn btn-primary py-3 px-5" data-product-id="{{ product.id }}">Add to Cart</button> -->
                     <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary addToCartBtn py-3 px-5" data-product-id="{{ product.id }}">Add to cart</a>
                     <a href="{% url 'add_to_wishlist' product.id %}" class="btn btn-primary py-3 px-5">Add to Wishlist</a>
-                    <div id="success-message" style="display: none; color: green;"></div>   
+                    <div id="success-message" style="display: none; color: green;"></div>  
                 </div>
             </div>
             
@@ -79,7 +79,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
  <script>
-     function showSuccessMessage(message) {
+    function showSuccessMessage(message) {
         var successMessage = $("#success-message");
         successMessage.text(message);
         successMessage.show();

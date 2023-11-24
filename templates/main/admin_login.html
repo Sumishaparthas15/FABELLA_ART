@@ -67,8 +67,8 @@ a:hover {
   padding-top: 80px;
   padding-bottom: 80px;
   background: url({% static 'images/cat1.jpg' %});
-  background-size: cover; /* Ensures the background image covers the entire element */
-  border-radius: 5%; /* Use a border-radius of 50% to create a circular effect */
+  background-size: cover; 
+  border-radius: 5%; 
 }
 
   .inner h3 {
@@ -228,17 +228,7 @@ button {
 				<form action="" method="post">
           {% csrf_token %}
 					<h3>ADMIN lOGIN FORM</h3>
-					<!-- <div class="form-group">
-						<div class="form-wrapper">
-							<label for="">First Name</label>
-							<input type="text" class="form-control">
-						</div>
-						<div class="form-wrapper">
-							<label for="">Last Name</label>
-							<input type="text" class="form-control">
-						</div>
-					</div> -->
-					<div class="form-wrapper">
+										<div class="form-wrapper">
 						<label for="">Email</label>
 						<input type="text" name="email" class="form-control">
 					</div>
@@ -246,16 +236,7 @@ button {
 						<label for="">Password</label>
 						<input type="password" name="password" class="form-control">
 					</div>
-					<!-- <div class="form-wrapper">
-						<label for="">Confirm Password</label>
-						<input type="password" class="form-control">
-					</div> -->
-					<!-- <div class="checkbox">
-						<label>
-							<input type="checkbox"> I caccept the Terms of Use & Privacy Policy.
-							<span class="checkmark"></span>
-						</label>
-					</div> -->
+					
 					<button>Login Now</button>
 				</form>
 			</div>

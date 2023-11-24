@@ -124,7 +124,8 @@
                         <h4 class="font-weight-semi-bold m-0">Order Total</h4>
                     </div>
                     <div class="card-body">
-                        <h5 class="font-weight-medium mb-3">Products</h5>
+                        <h5 class="font-weight-medium mb-3 text-dark">Products</h5>
+
                         {% for cart_item in cart_items %}
                         <div class="d-flex justify-content-between">
                             <p>{{ cart_item.product.product_name }}</p>

@@ -158,12 +158,12 @@ input[type="mobile"] {
     <div class="row">
         <!-- Left Sidebar -->
         <div class="col-lg-3">
-            <div class="list-group">
-                <a href="{% url 'profile' %}" class="list-group-item list-group-item-action ">Account Details</a>
-                <a href="{% url 'address' %}" class="list-group-item list-group-item-action active">Address</a> 
-                
-                <a href="#address-section" class="list-group-item list-group-item-action">Wallet</a>
-                <a href="{% url 'logout' %}" class="list-group-item list-group-item-action">Sign Out</a>
+            <div class="list-group"><br>
+                <a href="{% url 'profile' %}" class="list-group-item list-group-item-action active">Account Details</a>
+                <a href="{% url 'address' %}" class="list-group-item list-group-item-action">Address</a>
+                <a href="{% url 'changepassword' %}" class="list-group-item list-group-item-action">Change Password</a>
+                <a href="{% url 'wallet' %}" class="list-group-item list-group-item-action">Wallet</a>
+                <a href="{% url 'userlogout' %}" class="list-group-item list-group-item-action">Log Out</a>
             </div>
         </div>
         <div class = "col-lg-8" id = "address-container">

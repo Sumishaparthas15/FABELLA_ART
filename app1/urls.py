@@ -143,6 +143,7 @@ urlpatterns = [
     path('wallet/', views.wallet, name='wallet'),
 
     path('invoice/<int:id>/',views.invoice,name='invoice'),
+    path('download-invoice/<int:order_id>/', views.download_invoice_view, name='download_invoice'),
     path('contact/',views.contact,name='contact'),
 
     #salesreprt

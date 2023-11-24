@@ -5,12 +5,11 @@
 {% load static %}
 
 
-<body>
-    <div style="border: 5px solid white; padding: 20px; margin: 100px;">
-        <h3 style="color: white;">Order Details</h3>
+<body>    <div style="border: 5px solid black; padding: 20px; margin: 100px;">
+        <h3 style="color: black;">Order Details</h3>
 
         <div class="order-summary">
-            <h4>Order Id : {{ order.id }}</h4>
+            <h4 style="color: black;">Order Id : {{ order.id }}</h4>
             <p>Order Date: {{ order.date }}</p>
             <p>Customer Name: {{ order.user.username }}</p>
             {% if order.shipping %}
@@ -18,8 +17,8 @@
             {% elif order.address %}
             <p>Shipping Address: {{ order.address.email }}, {{ order.address.address1 }}, {{ order.address.city }}, {{ order.address.state }}, {{ order.address.post_code }}</p>
             {% endif %}
-            <hr style="border: 3px solid white;">
-            <h3 style="color: white;">Order Items:</h3>
+            <hr style="border: 3px solid black;">
+            <h3 style="color: black;">Order Items:</h3>
             <ul>
                 {% for order_item in order.orderitem_set.all %}
                 <li>
@@ -49,11 +48,11 @@
                 {% endif %}
             </div>
             <br>
-            <hr style="border: 3px solid white;">
+            <hr style="border: 3px solid black;">
             <p><strong>Total Price: </strong>{{ order.amount }}</p>
             <p><strong>Payment Method: </strong>{{ order.payment_type }}</p>
             <p><strong>Order Status: </strong>{{ order.status }}</p>
-           
+            <p><a href="{% url 'download_invoice' order.id %}" class="btn btn-primary">Download Invoice</a></p>
         </div>
     </div>
 </body>

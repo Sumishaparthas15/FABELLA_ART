@@ -50,7 +50,7 @@ class Address(models.Model):
         return f'{self.firstname} {self.lastname}'
 
 class Category(models.Model):
-    category_name=models.CharField(max_length=100)
+    category_name=models.CharField(max_length=100,unique=True)
     category_offer_description = models.CharField(max_length=100, null=True, blank=True)
     category_offer = models.PositiveBigIntegerField(default=0)
     is_deleted = models.BooleanField(default=False)  # New field
@@ -64,7 +64,7 @@ class Category(models.Model):
     
 class Sub_category(models.Model):
     main_category=models.ForeignKey(Category,on_delete=models.CASCADE)
-    sub_category_name=models.CharField(max_length=100)
+    sub_category_name=models.CharField(max_length=100,unique=True)
     
     def _str_(self):
         return self.sub_category_name

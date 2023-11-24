@@ -6,6 +6,14 @@
 {% load static %}
 
     <!-- END nav -->
+    <style>
+      .message-box {
+    border: 1px solid #ced4da; /* Border color */
+    padding: 10px; /* Adjust padding as needed */
+    border-radius: 8px; /* Optional: Rounded corners */
+}
+
+    </style>
 
     <section class="home-slider owl-carousel">
 
@@ -30,19 +38,19 @@
 					<div class="col-md-4 contact-info ftco-animate">
 						<div class="row">
 							<div class="col-md-12 mb-4">
-	              <h2 class="h4">Contact Information</h2>
+	              <h2 style="color: black;" class="h4">Contact Information</h2>
 	            </div>
 	            <div class="col-md-12 mb-3">
-	              <p><span>Address:</span> 198 West 21th Street, Suite 721 New York NY 10016</p>
+	              <p ><span style="color: black;">Address:</span> 198 West 21th Street, Suite 721 New York NY 10016</p>
 	            </div>
 	            <div class="col-md-12 mb-3">
-	              <p><span>Phone:</span> <a href="tel://1234567920">+ 1235 2355 98</a></p>
+	              <p><span style="color: black;">Phone:</span> <a href="tel://1234567920">+ 1235 2355 98</a></p>
 	            </div>
 	            <div class="col-md-12 mb-3">
-	              <p><span>Email:</span> <a href="mailto:fabellaart@gmail.com">info@yoursite.com</a></p>
+	              <p><span style="color: black;">Email:</span> <a href="mailto:fabellaart@gmail.com">info@yoursite.com</a></p>
 	            </div>
 	            <div class="col-md-12 mb-3">
-	              <p><span>Website:</span> <a href="#">yoursite.com</a></p>
+	              <p><span style="color: black;">Website:</span> <a href="#">yoursite.com</a></p>
 	            </div>
 						</div>
 					</div>
@@ -61,28 +69,23 @@
                 {% endif %}
                 <form method="post" action="{% url 'contact' %}">
                   {% csrf_token %}
-                  <div class="row">
-                    <div class="col-6">
-                      <div class="form-group">
-                        <label class="text-black" for="fname"> Your name</label>
-                        <input type="text" class="form-control" id="fname">
+                
+                  {% if form_submitted %}
+                      <div class="alert alert-success" role="alert">
+                          Your message was sent successfully!
                       </div>
-                    </div>
-  
-                  </div>
-                  <div class="form-group">
-                    <label class="text-black" for="email">Email address</label>
-                    <input type="email" class="form-control" id="email">
-                  </div>
-  
+                  {% endif %}
+              
                   <div class="form-group mb-5">
-                    <label class="text-black" for="message">Message</label>
-                    <textarea name="message" class="form-control" id="message" cols="30" rows="5"></textarea>
+                      <label class="text-black" for="message">Message</label>
+                      <div class="message-box">
+                          <textarea name="message" class="form-control" id="message" cols="30" rows="5"></textarea>
+                      </div>
                   </div>
-  
+                
                   <button type="submit" class="btn btn-primary-hover-outline">Send Message</button>
-                </form>
-  
+              </form>
+              
               </div>
             
             </div>
