@@ -472,17 +472,7 @@ def update_product(request, product_id):
         }
         return render(request, 'main/product.html', context)
 
-# def delete_product(request, product_id):
-#     try:
-#         product = get_object_or_404(Product, id=product_id, deleted=False)
-#     except Product.DoesNotExist:
-#         return render(request, 'product_not_found.html')
-#     if product.deleted:
-#         return render(request, 'product_already_deleted.html', {'product': product})
 
-#     product.deleted = True
-#     product.save()
-#     return redirect('product')
 def delete_product(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
@@ -490,7 +480,6 @@ def delete_product(request, product_id):
         product.save()
     except Product.DoesNotExist:
          return render(request, 'product_not_found.html')
-
     return redirect('product')
 
 def restore_product(request, product_id):
