@@ -1,1 +1,1 @@
-web: gunicorn FABELLA_ART.wsgi
+web: gunicorn FABELLA_ART.wsgi --log-file -
