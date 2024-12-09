@@ -768,7 +768,7 @@ def report_generator(request, orders):
     # Style the table
     table_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.gray),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoF),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 14),
@@ -925,7 +925,7 @@ def signup(request):
 
         try:
             if not (name and email and password and phone_number and confirmpassword):
-                messages.info(request, "!Please Fill Required Fields")
+                messages.info(request, "Please Fill Required Fields")
                 return redirect('signup')
 
             if password != confirmpassword:
@@ -940,25 +940,27 @@ def signup(request):
                 messages.info(request, "Phone Number Already Taken")
                 return redirect('signup')
 
-            # Create the user using CustomUser model
+            # Create the user using the CustomUser model
             user = Profile.objects.create_user(email=email, password=password, username=name, number=phone_number)
             user.save()
 
+            # Generate OTP and send email
             message = generate_otp()
             sender_email = "sumishasudha392@gmail.com"
-            receiver_mail = email
-            password_email = "xhywblrweffmdeyj"
+            receiver_email = email
+            password_email = "ebvd zdgw thrs sgsf"
 
             try:
                 with smtplib.SMTP("smtp.gmail.com", 587) as server:
                     server.starttls()
                     server.login(sender_email, password_email)
-                    server.sendmail(sender_email, receiver_mail, message)
+                    server.sendmail(sender_email, receiver_email, message)
 
             except smtplib.SMTPAuthenticationError:
                 messages.error(request, 'Failed to send OTP email. Please check your email configuration.')
-                return redirect('login')
+                return redirect('signup')
 
+            # Store session data and notify user of OTP
             request.session['email'] = email
             request.session['otp'] = message
             messages.success(request, 'OTP is sent to your email')
@@ -966,7 +968,7 @@ def signup(request):
             return redirect('verify_signup')
 
         except DataError as e:
-            # Handle the specific DataError related to the phone number length
+            # Handle DataError related to phone number length
             messages.error(request, 'Invalid phone number. Please enter a valid phone number.')
             return redirect('signup')
 

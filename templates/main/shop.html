@@ -66,13 +66,17 @@
                             {% for product in products %}
                                 {% if not product.deleted %}
                                     <div class="col-md-3">
-                                        <div class="menu-entry">
-                                            <a href="{% url 'product_details' product.id %}">
-                                                <img src="/media/{{ product.image }}" style="height: 300px; width: 200px;" alt="{{ product.product_name }}">
+                                        <div class="menu-entry" style="position: relative; overflow: hidden;">
+                                            <a href="{% url 'product_details' product.id %}" style="display: block; position: relative;">
+                                                <img 
+                                                    src="/media/{{ product.image }}" 
+                                                    style="height: 300px; width: 200px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" 
+                                                    alt="{{ product.product_name }}" 
+                                                    onmouseover="this.style.transform='scale(1.2)'; this.style.zIndex='10'; this.style.boxShadow='0 10px 20px rgba(0, 0, 0, 0.5)'" 
+                                                    onmouseout="this.style.transform='scale(1)'; this.style.zIndex='1'; this.style.boxShadow='none'">
                                             </a>
                                             <div class="text text-center pt-4">
                                                 <h3><a href="{% url 'product_details' product.id %}" style="color: black;">{{ product.product_name }}</a></h3>
-
                                                 <p style="color: black;">{{ product.description }}</p>
                                                 {% if product.discounted_price %}
                                                     <strong class="text-dark ml-2"><del>₹{{ product.price }}</del></strong>
@@ -83,7 +87,6 @@
                                                 {% else %}
                                                     <p><strong>Price: ₹{{ product.price }}</strong></p>
                                                 {% endif %}
-                                                <!-- <p><a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-outline-primary">Add to Cart</a></p> -->
                                             </div>
                                         </div>
                                     </div>
@@ -97,8 +100,7 @@
                     </div>
                 </div>
             </div>
-            
-               
+                           
                 </div>
               </div>
             </div>
