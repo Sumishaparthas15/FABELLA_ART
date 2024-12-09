@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-cn_$lwa4qsny15^b#@8s(!xttf#+4@ag8i+!7=)2#jl44_$^k&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['FABELLA_ART.up.railway.app']
 
 
 # Application definition
